@@ -1,0 +1,71 @@
+<!-- Template para la página de perfil de usuario -->
+<div class="container profile-container">
+    <div class="profile-header">
+        <h2>Mi Perfil</h2>
+        <p>Administra tu información personal y configuración de cuenta</p>
+    </div>
+    
+    <div class="profile-content">
+        <form id="profile-form" class="profile-form">
+            <div class="form-group">
+                <label for="profile-email">Email</label>
+                <input type="email" id="profile-email" readonly>
+                <small>El email no puede ser modificado</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="profile-name">Nombre</label>
+                <input type="text" id="profile-name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="profile-role">Rol (Opcional)</label>
+                <input type="text" id="profile-role">
+            </div>
+            
+            <div class="form-group">
+                <label for="profile-organization">Organización (Opcional)</label>
+                <input type="text" id="profile-organization">
+            </div>
+            
+            <div class="form-group">
+                <label for="profile-contact">Contacto</label>
+                <input type="text" id="profile-contact">
+                <small>Información de contacto alternativa</small>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                <button type="button" id="change-password-btn" class="btn btn-outline">Cambiar Contraseña</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal para cambiar contraseña -->
+<div id="change-password-modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Cambiar Contraseña</h2>
+        <form id="change-password-form">
+            <div class="form-group">
+                <label for="current-password">Contraseña Actual</label>
+                <input type="password" id="current-password" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="new-password">Nueva Contraseña</label>
+                <input type="password" id="new-password" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="confirm-new-password">Confirmar Nueva Contraseña</label>
+                <input type="password" id="confirm-new-password" required>
+            </div>
+            
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Actualizar Contraseña</button>
+            </div>
+        </form>
+    </div>
+</div>
