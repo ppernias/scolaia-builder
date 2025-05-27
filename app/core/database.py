@@ -48,7 +48,7 @@ Base = declarative_base()
 # Función para inicializar la base de datos
 def init_db():
     # Importar todos los modelos aquí para que SQLAlchemy los conozca
-    from ..models import user, assistant
+    from ..models import user, assistant, token
     
     # Crear todas las tablas
     Base.metadata.create_all(bind=engine)

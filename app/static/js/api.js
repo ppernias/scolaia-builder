@@ -49,11 +49,17 @@ const api = {
             
             // Parse response
             let result;
-            const contentType = response.headers.get('content-type');
-            if (contentType && contentType.includes('application/json')) {
-                result = await response.json();
+            
+            // Si el código de estado es 204 (No Content), no intentamos analizar la respuesta
+            if (response.status === 204) {
+                result = null;
             } else {
-                result = await response.text();
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    result = await response.json();
+                } else {
+                    result = await response.text();
+                }
             }
             
             // Log response for debugging

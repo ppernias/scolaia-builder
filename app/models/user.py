@@ -3,6 +3,9 @@ from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from ..core.database import Base
 
+# Importar los modelos necesarios
+from .token import TokenBlacklist
+
 class User(Base):
     __tablename__ = "users"
 
@@ -18,5 +21,7 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # Relationship
+    # Relationships
     assistants = relationship("Assistant", back_populates="user")
+    blacklisted_tokens = relationship("TokenBlacklist", back_populates="user")
+

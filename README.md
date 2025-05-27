@@ -8,6 +8,7 @@ ADLBuilder is a web application designed to create, edit, and manage AI assistan
 
 - **Dual Editor**: Simple mode for basic editing and advanced mode for full control
 - **YAML Validation**: Real-time validation against the defined schema
+- **Enhanced Security**: JWT authentication with refresh tokens and token revocation
 - **User Authentication**: Registration and login to save personal assistants
 - **Template Library**: Collection of predefined templates to get started quickly
 - **Import/Export**: Support for importing and exporting YAML files
@@ -152,6 +153,25 @@ Parameters:
 - `--email`: Administrator email for testing (default: admin@example.com)
 - `--password`: Administrator password (default: password)
 
+### update_db.py
+
+Updates the database schema with the latest model changes, including the token blacklist table.
+
+```bash
+./scripts/update_db.py
+```
+
+### cleanup_tokens.py
+
+Removes expired tokens from the blacklist to keep the database optimized.
+
+```bash
+./scripts/cleanup_tokens.py --verbose
+```
+
+Parameters:
+- `--verbose`, `-v`: Show detailed information during execution
+
 ## Database
 
 The application uses SQLite by default and automatically creates the database and necessary tables at startup. For production environments, it is recommended to migrate to PostgreSQL.
@@ -159,6 +179,32 @@ The application uses SQLite by default and automatically creates the database an
 ## Internationalization (i18n)
 
 The application is prepared to support multiple languages. It currently includes English and Spanish, with a structure to easily add more languages.
+
+## Security Features
+
+ADLBuilder implements several security features to protect user data and prevent unauthorized access:
+
+### JWT Authentication
+
+- **Access Tokens**: Short-lived tokens (30 minutes) for API access
+- **Refresh Tokens**: Long-lived tokens (7 days) to obtain new access tokens without re-authentication
+- **Token Revocation**: Ability to invalidate tokens before expiration (logout)
+- **Token Blacklisting**: Revoked tokens are stored in a database to prevent reuse
+- **Enhanced Payload**: Tokens include additional claims (issuer, JWT ID, token type)
+
+### User Session Management
+
+- **Secure Logout**: Properly invalidates tokens on logout
+- **Token Refresh**: Seamless token renewal without disrupting user experience
+- **Automatic Cleanup**: Expired blacklisted tokens are periodically removed from the database
+
+### Update Database Script
+
+To update your database with the latest security features, run:
+
+```bash
+./scripts/update_db.py
+```
 
 ## License
 

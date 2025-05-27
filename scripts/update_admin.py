@@ -8,9 +8,14 @@ import csv
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from sqlalchemy.orm import Session
-from app.core.database import engine
-from app.models.user import User
+from app.core.database import engine, init_db
 from app.services.auth import get_password_hash
+
+# Inicializar la base de datos para asegurar que todos los modelos están registrados
+init_db()
+
+# Importar el modelo User después de inicializar la base de datos
+from app.models.user import User
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description='Administrar usuarios de ADLBuilder')
