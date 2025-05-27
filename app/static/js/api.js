@@ -10,8 +10,28 @@ const api = {
             const token = localStorage.getItem('token');
             if (!token) return false;
             
-            // Basic validation - could be enhanced with JWT decoding
-            return true;
+            try {
+                // Verificar si el token tiene formato JWT (xxx.yyy.zzz)
+                if (!token.match(/^[\w-]+\.[\w-]+\.[\w-]+$/)) {
+                    return false;
+                }
+                
+                // Intentar decodificar la parte de payload (segunda parte)
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                
+                // Verificar si el token ha expirado
+                if (payload.exp && payload.exp * 1000 < Date.now()) {
+                    // Token expirado, eliminarlo
+                    api.token.remove();
+                    return false;
+                }
+                
+                return true;
+            } catch (e) {
+                // Si hay algún error al decodificar, consideramos el token inválido
+                console.error('Error validating token:', e);
+                return false;
+            }
         }
     },
     
@@ -67,11 +87,19 @@ const api = {
             
             // Handle error responses
             if (!response.ok) {
-                throw {
+                const error = {
                     status: response.status,
                     statusText: response.statusText,
                     detail: result.detail || result
                 };
+                
+                // Solo registramos errores en la consola si no son errores de autenticaciu00f3n
+                // o si estamos en modo de depuraciu00f3n
+                if (response.status !== 401 || config.debug) {
+                    console.error('API request failed:', error);
+                }
+                
+                throw error;
             }
             
             return result;

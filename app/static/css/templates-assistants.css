@@ -1,0 +1,138 @@
+/* Templates and Assistants styles for ADLBuilder */
+
+/* Templates styles */
+.templates-container {
+    background-color: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 30px;
+}
+
+/* Assistants styles */
+.my-assistants-container {
+    background-color: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 30px;
+}
+
+.my-assistants-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+/* Filter styles - shared between templates and assistants */
+.templates-filter,
+.assistants-filter {
+    display: flex;
+    margin-bottom: 30px;
+}
+
+.templates-filter input,
+.assistants-filter input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius) 0 0 var(--border-radius);
+    font-size: 1rem;
+}
+
+.templates-filter select,
+.assistants-filter select {
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-left: none;
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    background-color: var(--light-bg);
+    font-size: 1rem;
+}
+
+/* Grid layouts */
+.templates-grid,
+.assistants-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+/* Card styles - shared between templates and assistants */
+.template-card,
+.assistant-card {
+    background-color: var(--light-bg);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease;
+}
+
+.template-card:hover,
+.assistant-card:hover {
+    transform: translateY(-5px);
+}
+
+.template-card h3,
+.assistant-card h3 {
+    margin-bottom: 10px;
+    color: var(--text-color);
+}
+
+.template-card p,
+.assistant-meta {
+    color: var(--text-light);
+    margin-bottom: 15px;
+}
+
+.template-card p {
+    height: 60px;
+    overflow: hidden;
+}
+
+.assistant-meta {
+    font-size: 0.9rem;
+}
+
+/* Tag styles - reusable for templates and assistants */
+.template-tags,
+.assistant-tags {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+}
+
+.template-tag, 
+.assistant-tag {
+    background-color: var(--light-accent);
+    color: var(--primary-color);
+    padding: 3px 8px;
+    border-radius: var(--border-radius);
+    font-size: 0.8rem;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+.assistant-actions {
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .templates-filter,
+    .assistants-filter {
+        flex-direction: column;
+    }
+    
+    .templates-filter input,
+    .assistants-filter input {
+        border-radius: var(--border-radius) var(--border-radius) 0 0;
+        border-bottom: none;
+    }
+    
+    .templates-filter select,
+    .assistants-filter select {
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+        border-left: 1px solid var(--border-color);
+    }
+}

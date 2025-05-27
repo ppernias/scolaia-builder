@@ -1,0 +1,59 @@
+/* Base styles for ADLBuilder */
+
+:root {
+    --primary-color: #4a6cf7;
+    --primary-hover: #3a5ce5;
+    --light-bg: #f8f9fa;
+    --light-accent: #f0f2ff;
+    --text-color: #333;
+    --text-light: #666;
+    --border-color: #ddd;
+    --white: #fff;
+    --danger: #dc3545;
+    --danger-hover: #c82333;
+    --success: #28a745;
+    --warning: #ffc107;
+    --box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    --border-radius: 4px;
+    --transition: all 0.3s ease;
+}
+
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--light-bg);
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Utility classes */
+.hidden {
+    display: none !important;
+}
+
+/* Page styles */
+main {
+    min-height: calc(100vh - 140px);
+    padding: 40px 0;
+}
+
+.page {
+    display: none;
+}
+
+.page.active, .page:not(.hidden) {
+    display: block;
+}

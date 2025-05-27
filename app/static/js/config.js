@@ -1,6 +1,9 @@
 // Configuration settings for ADLBuilder
 
 const config = {
+    // Debug mode (false en producciu00f3n, true en desarrollo)
+    debug: false,
+    
     // API configuration
     api: {
         baseUrl: '/api/v1',

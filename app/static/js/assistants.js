@@ -118,12 +118,19 @@ const assistants = {
             // Actualizar estado con los asistentes obtenidos
             assistants.state.assistants = assistantsList || [];
         } catch (error) {
-            console.error('Error loading assistants:', error);
-            assistants.state.error = error.detail || 'Error loading assistants';
+            // Solo registramos errores que no sean de autenticación
+            if (error.status !== 401 || config.debug) {
+                console.error('Error loading assistants:', error);
+            }
+            
+            // Si es un error de autenticación, no lo mostramos al usuario
+            // ya que es un comportamiento esperado cuando no hay sesión activa
+            if (error.status !== 401) {
+                assistants.state.error = error.detail || 'Error loading assistants';
+            }
         } finally {
-            // Siempre actualizar el estado de carga y renderizar
             assistants.state.loading = false;
-            assistants.renderAssistants();
+            assistants.filterAssistants();
         }
     },
     
@@ -156,9 +163,45 @@ const assistants = {
     },
     
     // Render assistants list
-    renderAssistants: (filteredAssistants = null) => {
+    renderAssistants: async (filteredAssistants = null) => {
         const assistantsList = document.querySelector('.assistants-list');
         if (!assistantsList) return;
+        
+        // Si estamos cargando, mostrar indicador de carga
+        if (assistants.state.loading) {
+            assistantsList.innerHTML = `
+                <div class="loading-indicator">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>${i18n.t('assistants.loading')}</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Si hay un error, mostrar mensaje de error
+        if (assistants.state.error) {
+            assistantsList.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>${assistants.state.error}</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Si no hay token válido, mostrar mensaje de no autenticado
+        // Solo mostramos este mensaje si realmente no hay token válido
+        // y no estamos en proceso de carga o con otro error
+        if (!api.token.isValid() && !assistants.state.loading && !assistants.state.error) {
+            assistantsList.innerHTML = `
+                <div class="error-message">
+                    <p>Not authenticated</p>
+                </div>
+            `;
+            return;
+        }
+        
+        const assistantsToRender = filteredAssistants || assistants.state.assistants;
         
         // Verificar si hay un elemento de depuración para mostrar el estado actual
         console.log('Estado actual:', {
@@ -166,20 +209,6 @@ const assistants = {
             error: assistants.state.error,
             assistantsCount: (filteredAssistants || assistants.state.assistants).length
         });
-        
-        // Show loading state
-        if (assistants.state.loading) {
-            assistantsList.innerHTML = `<div class="loading">${i18n.t('assistants.loading')}</div>`;
-            return;
-        }
-        
-        // Show error state
-        if (assistants.state.error) {
-            assistantsList.innerHTML = `<div class="error-message">${assistants.state.error}</div>`;
-            return;
-        }
-        
-        const assistantsToRender = filteredAssistants || assistants.state.assistants;
         
         // Show empty state
         if (assistantsToRender.length === 0) {

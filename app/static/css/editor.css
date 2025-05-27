@@ -1,0 +1,169 @@
+/* Editor styles for ADLBuilder */
+
+.editor-container {
+    background-color: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 30px;
+    margin-top: 20px;
+}
+
+.editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.editor-controls {
+    display: flex;
+    align-items: center;
+}
+
+.editor-controls .btn {
+    margin-left: 10px;
+}
+
+/* Mode toggle switch styles */
+.mode-toggle {
+    display: flex;
+    align-items: center;
+    margin-right: 20px;
+}
+
+.mode-toggle label {
+    position: relative;
+    display: inline-block;
+    width: 200px;
+    height: 34px;
+}
+
+.mode-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--light-accent);
+    transition: .4s;
+    border-radius: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 15px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: var(--white);
+    transition: .4s;
+    border-radius: 50%;
+    z-index: 1;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+input:checked + .slider {
+    background-color: var(--primary-color);
+}
+
+input:checked + .slider:before {
+    transform: translateX(165px);
+}
+
+.simple-mode, .advanced-mode {
+    position: relative;
+    z-index: 2;
+    font-weight: 500;
+    font-size: 14px;
+    transition: color 0.3s ease;
+}
+
+.simple-mode {
+    color: var(--primary-color);
+}
+
+.advanced-mode {
+    color: var(--text-light);
+}
+
+input:checked + .slider .simple-mode {
+    color: var(--white);
+}
+
+input:checked + .slider .advanced-mode {
+    color: var(--primary-color);
+}
+
+/* Editor layout */
+.editor-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.editor-form {
+    padding-right: 20px;
+    border-right: 1px solid var(--border-color);
+}
+
+.yaml-preview {
+    padding-left: 20px;
+}
+
+.yaml-preview h3 {
+    margin-bottom: 15px;
+    color: var(--text-color);
+}
+
+#yaml-output {
+    background-color: var(--light-bg);
+    padding: 15px;
+    border-radius: var(--border-radius);
+    font-family: 'Courier New', Courier, monospace;
+    white-space: pre-wrap;
+    height: 500px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+}
+
+/* Responsive editor styles */
+@media (max-width: 768px) {
+    .editor-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .editor-controls {
+        margin-top: 15px;
+        flex-wrap: wrap;
+    }
+    
+    .editor-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .editor-form {
+        padding-right: 0;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .yaml-preview {
+        padding-left: 0;
+    }
+}

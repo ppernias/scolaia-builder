@@ -30,6 +30,11 @@ const app = {
             i18n.applyTranslations();
             // Update visibility of auth-required elements
             app.updateAuthRequiredElements();
+            
+            // Redirigir a la página de asistentes si el usuario está autenticado
+            if (api.token.isValid()) {
+                app.navigateTo('my-assistants');
+            }
         }, 100);
         // No inicializamos admin.init() aquí, se inicializará cuando el usuario inicie sesión como administrador
         
