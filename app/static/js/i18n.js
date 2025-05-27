@@ -71,7 +71,14 @@ const i18n = {
             // Admin
             'admin.title': 'Admin Panel',
             'admin.users': 'Users',
-            'admin.assistants': 'Assistants'
+            'admin.assistants': 'Assistants',
+            
+            // Editor modes
+            'editor.title': 'Assistant Editor',
+            'editor.mode.basic': '(basic)',
+            'editor.mode.advanced': '(advanced)',
+            'editor.mode.toggle': 'Advanced Mode',
+            'editor.schemaLoadError': 'Error loading schema. Please try again.'
         },
         es: {
             // Common
@@ -132,7 +139,14 @@ const i18n = {
             // Admin
             'admin.title': 'Panel de Administración',
             'admin.users': 'Usuarios',
-            'admin.assistants': 'Asistentes'
+            'admin.assistants': 'Asistentes',
+            
+            // Editor modes
+            'editor.title': 'Editor de Asistentes',
+            'editor.mode.basic': '(básico)',
+            'editor.mode.advanced': '(avanzado)',
+            'editor.mode.toggle': 'Modo Avanzado',
+            'editor.schemaLoadError': 'Error al cargar el esquema. Por favor, inténtalo de nuevo.'
         }
     },
     

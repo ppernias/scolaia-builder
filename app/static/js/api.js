@@ -275,6 +275,30 @@ const api = {
         }
     },
     
+    // Schema operations
+    schema: {
+        get: async () => {
+            // Verificar si el usuario está autenticado
+            if (!api.token.isValid()) {
+                console.error('Authentication token is not valid');
+                throw new Error('User not authenticated');
+            }
+            
+            try {
+                console.log('Attempting to load schema through API...');
+                return api.request(
+                    config.api.endpoints.schema.get,
+                    'GET',
+                    null,
+                    true // Requiere autenticación
+                );
+            } catch (error) {
+                console.error('Error loading schema through API:', error);
+                throw error;
+            }
+        }
+    },
+    
     // Admin operations
     admin: {
         listUsers: async (page = 0, limit = 10, search = '') => {

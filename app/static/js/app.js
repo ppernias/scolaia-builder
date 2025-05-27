@@ -20,7 +20,11 @@ const app = {
         
         // Then initialize other components
         auth.init();
+        
+        // Make sure editor is globally accessible
+        window.editor = editor;
         editor.init();
+        
         templates.init();
         assistants.init();
         
@@ -37,9 +41,6 @@ const app = {
             }
         }, 100);
         // No inicializamos admin.init() aquí, se inicializará cuando el usuario inicie sesión como administrador
-        
-        // Load editor template
-        editor.loadEditorTemplate();
     },
     
     // Set up event listeners
@@ -53,7 +54,9 @@ const app = {
         document.getElementById('nav-editor').addEventListener('click', (e) => {
             e.preventDefault();
             app.navigateTo('editor');
-            editor.createNew();
+            setTimeout(() => {
+                editor.createNew();
+            }, 200);
         });
         
         document.getElementById('nav-templates').addEventListener('click', (e) => {
@@ -76,7 +79,9 @@ const app = {
             const isAuthenticated = api.token.isValid();
             if (isAuthenticated) {
                 app.navigateTo('editor');
-                editor.createNew();
+                setTimeout(() => {
+                    editor.createNew();
+                }, 200);
             } else {
                 // Show login required message
                 app.showNotification(i18n.t('auth.loginRequired'), 'warning');
@@ -116,23 +121,17 @@ const app = {
             });
         }
         
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.user-dropdown')) {
-                const dropdownMenu = document.getElementById('user-dropdown-menu');
-                if (dropdownMenu && !dropdownMenu.classList.contains('hidden')) {
-                    dropdownMenu.classList.add('hidden');
-                }
-            }
-        });
-        
         // User profile link
-        const userProfileLink = document.getElementById('user-profile-link');
-        if (userProfileLink) {
-            userProfileLink.addEventListener('click', (e) => {
+        const profileLink = document.getElementById('user-profile-link');
+        if (profileLink) {
+            profileLink.addEventListener('click', (e) => {
                 e.preventDefault();
                 app.navigateTo('profile');
-                document.getElementById('user-dropdown-menu').classList.add('hidden');
+                // Hide dropdown menu
+                const dropdownMenu = document.getElementById('user-dropdown-menu');
+                if (dropdownMenu) {
+                    dropdownMenu.classList.add('hidden');
+                }
             });
         }
         
@@ -142,86 +141,84 @@ const app = {
             adminPanelLink.addEventListener('click', (e) => {
                 e.preventDefault();
                 app.navigateTo('admin');
-                document.getElementById('user-dropdown-menu').classList.add('hidden');
+                // Hide dropdown menu
+                const dropdownMenu = document.getElementById('user-dropdown-menu');
+                if (dropdownMenu) {
+                    dropdownMenu.classList.add('hidden');
+                }
             });
         }
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#user-name') && !e.target.closest('#user-dropdown-menu')) {
+                const dropdownMenu = document.getElementById('user-dropdown-menu');
+                if (dropdownMenu && !dropdownMenu.classList.contains('hidden')) {
+                    dropdownMenu.classList.add('hidden');
+                }
+            }
+        });
     },
     
     // Navigate to a page
     navigateTo: (page) => {
-        // Check if user is authenticated for pages that require authentication
-        const authRequiredPages = ['editor', 'templates', 'my-assistants', 'admin', 'profile'];
-        const isAuthenticated = api.token.isValid();
+        console.log(`Navigating to page: ${page}`);
         
-        if (authRequiredPages.includes(page) && !isAuthenticated) {
-            console.warn(`Usuario no autenticado intentando acceder a: ${page}`);
-            app.showNotification(i18n.t('auth.loginRequired'), 'warning');
-            page = 'home'; // Redirect to home page
-        }
+        // Get all pages
+        const pages = document.querySelectorAll('.page');
         
-        // Hide all pages - remove active class and add hidden class
-        document.querySelectorAll('.page').forEach(p => {
+        // Hide all pages
+        pages.forEach(p => {
             p.classList.remove('active');
-            p.classList.add('hidden');
+            p.style.display = 'none';
         });
         
-        // Create admin page if it doesn't exist
-        if (page === 'admin') {
-            if (!document.getElementById('page-admin')) {
-                const adminPage = document.createElement('div');
-                adminPage.id = 'page-admin';
-                adminPage.className = 'page';
-                document.querySelector('main').appendChild(adminPage);
+        // Remove active class from all nav links
+        document.querySelectorAll('nav a').forEach(link => {
+            link.classList.remove('active');
+        });
+        
+        // Show selected page
+        const selectedPage = document.getElementById(`page-${page}`);
+        if (selectedPage) {
+            selectedPage.classList.add('active');
+            selectedPage.style.display = 'block';
+        }
+        
+        // Add active class to nav link
+        const navLink = document.getElementById(`nav-${page}`);
+        if (navLink) {
+            navLink.classList.add('active');
+        }
+        
+        // Special handling for different pages
+        if (page === 'editor') {
+            console.log('Navigating to editor page, preparing editor...');
+            // Make sure the editor template is loaded first
+            editor.loadEditorTemplate();
+            // Then prepare the editor
+            setTimeout(() => {
+                editor.prepareEditor();
+            }, 100);
+        } else if (page === 'templates') {
+            // Load templates
+            templates.loadTemplates();
+        } else if (page === 'my-assistants') {
+            // Load assistants
+            assistants.loadAssistants();
+        } else if (page === 'admin') {
+            // Initialize admin panel if not already initialized
+            if (typeof admin !== 'undefined' && !admin.initialized) {
+                admin.init();
             }
             
-            // Inicializar el módulo de administración si el usuario es administrador
-            if (auth && auth.currentUser && auth.currentUser.is_admin) {
-                if (typeof admin !== 'undefined' && admin && typeof admin.init === 'function') {
-                    console.log('Inicializando módulo de administración...');
-                    admin.init();
-                } else {
-                    console.error('El módulo de administración no está disponible');
-                }
-            } else {
-                console.warn('Usuario no autorizado intentando acceder al panel de administración');
-                app.showNotification('No tienes permisos para acceder al panel de administración', 'error');
-                page = 'home'; // Redirigir a la página de inicio
+            // Load users list
+            if (typeof admin !== 'undefined') {
+                admin.loadUsers();
             }
-        }
-        
-        // Inicializar el módulo de perfil cuando se navega a la página de perfil
-        if (page === 'profile') {
-            // Verificar si el usuario está autenticado
-            if (auth && auth.currentUser) {
-                if (typeof profile !== 'undefined' && profile && typeof profile.init === 'function') {
-                    console.log('Inicializando módulo de perfil...');
-                    profile.init();
-                } else {
-                    console.error('El módulo de perfil no está disponible');
-                }
-            } else {
-                console.warn('Usuario no autenticado intentando acceder al perfil');
-                app.showNotification('Debes iniciar sesión para acceder a tu perfil', 'error');
-                page = 'home'; // Redirigir a la página de inicio
-            }
-        }
-        
-        // Show selected page - add active class and remove hidden class
-        const pageElement = document.getElementById(`page-${page}`);
-        if (pageElement) {
-            pageElement.classList.add('active');
-            pageElement.classList.remove('hidden');
-            console.log(`Mostrando página: ${page}`);
-        } else {
-            console.error(`Página no encontrada: ${page}`);
-            return;
-        }
-        
-        // Update active navigation
-        document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
-        const navElement = document.getElementById(`nav-${page}`);
-        if (navElement) {
-            navElement.classList.add('active');
+        } else if (page === 'profile') {
+            // Load user profile
+            profile.loadProfile();
         }
     },
     

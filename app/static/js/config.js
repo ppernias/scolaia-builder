@@ -32,6 +32,9 @@ const config = {
             validate: {
                 yaml: '/validate/yaml'
             },
+            schema: {
+                get: '/schema'
+            },
             admin: {
                 users: '/admin/users',
                 usersCount: '/admin/users/count',

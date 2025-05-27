@@ -1,5 +1,13 @@
 #!/bin/bash
 
+echo "Stopping any running instances of ADLBuilder..."
+# Buscar y detener procesos uvicorn existentes
+pkill -f "uvicorn app.main:app" || echo "No running instances found."
+
+# Esperar un momento para asegurar que los procesos se detengan
+sleep 1
+
+echo "Starting ADLBuilder..."
 # Activar entorno virtual
 source venv/bin/activate
 

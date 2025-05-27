@@ -60,8 +60,21 @@ const assistants = {
         const createButton = document.getElementById('create-new-assistant');
         if (createButton) {
             createButton.addEventListener('click', () => {
+                console.log('Create new assistant button clicked');
+                // Ensure editor is accessible
+                if (!window.editor) {
+                    console.error('Editor not found, initializing...');
+                    window.editor = editor;
+                }
+                
+                // Navigate to editor page first
                 app.navigateTo('editor');
-                editor.createNew();
+                
+                // Wait a moment for the page to load before creating new assistant
+                setTimeout(() => {
+                    console.log('Creating new assistant after navigation');
+                    editor.createNew();
+                }, 300);
             });
         }
         

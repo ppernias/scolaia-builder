@@ -9,7 +9,7 @@ from pathlib import Path
 # Importar módulos de la aplicación
 from app.core.config import settings
 from app.core.database import get_db, Base, engine, init_db
-from app.api import auth, users, assistants, validate, templates as template_api, admin
+from app.api import auth, users, assistants, validate, templates as template_api, admin, schema
 
 # Inicializar la base de datos (crear tablas si no existen)
 init_db()
@@ -42,6 +42,7 @@ app.include_router(assistants.router, prefix=f"{settings.API_V1_STR}/assistants"
 app.include_router(admin.router, prefix=f"{settings.API_V1_STR}/admin", tags=["admin"])
 app.include_router(validate.router, prefix=f"{settings.API_V1_STR}/validate", tags=["validation"])
 app.include_router(template_api.router, prefix=f"{settings.API_V1_STR}/templates", tags=["templates"])
+app.include_router(schema.router, prefix=f"{settings.API_V1_STR}/schema", tags=["schema"])
 
 # Crear directorio de plantillas si no existe
 os.makedirs(os.path.join(os.path.dirname(__file__), "templates"), exist_ok=True)

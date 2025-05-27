@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="/static/css/layout.css">
     <link rel="stylesheet" href="/static/css/components.css">
     <link rel="stylesheet" href="/static/css/editor.css">
+    <link rel="stylesheet" href="/static/css/dynamic-form.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
     <link rel="stylesheet" href="/static/css/templates-assistants.css">
     <link rel="stylesheet" href="/static/css/admin.css">
     <link rel="stylesheet" href="/static/css/profile.css">
@@ -182,15 +184,12 @@
     <template id="template-editor">
         <div class="container editor-container">
             <div class="editor-header">
-                <h2>Assistant Editor</h2>
+                <h2 data-i18n="editor.title">Assistant Editor</h2> <span id="editor-mode-indicator" data-i18n="editor.mode.basic">(basic)</span>
                 <div class="editor-controls">
                     <div class="mode-toggle">
-                        <label>
+                        <label for="editor-mode-toggle">
                             <input type="checkbox" id="editor-mode-toggle">
-                            <span class="slider">
-                                <span class="simple-mode">Modo Simple</span>
-                                <span class="advanced-mode">Modo Avanzado</span>
-                            </span>
+                            <span class="checkbox-label" data-i18n="editor.mode.toggle">Advanced Mode</span>
                         </label>
                     </div>
                     <button id="save-assistant" class="btn btn-primary">Save</button>
@@ -275,11 +274,17 @@
     <script src="/static/js/api.js"></script>
     <script src="/static/js/i18n.js"></script>
     <script src="/static/js/auth.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+    <script src="/static/js/schema-loader.js"></script>
+    <script src="/static/js/form-generator.js"></script>
     <script src="/static/js/editor.js"></script>
     <script src="/static/js/templates.js"></script>
     <script src="/static/js/assistants.js"></script>
     <script src="/static/js/admin.js"></script>
     <script src="/static/js/profile.js"></script>
     <script src="/static/js/app.js"></script>
+    <script src="/static/js/debug-editor.js"></script>
 </body>
 </html>
