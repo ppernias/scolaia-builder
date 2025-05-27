@@ -26,6 +26,10 @@ wheels/
 # Logs
 *.log
 
+# Base de datos
+*.db
+*.sqlite3
+
 # Archivos locales
 .env
 .venv

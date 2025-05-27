@@ -1,0 +1,4 @@
+email,name,password,is_admin
+juan@example.com,Juan Pérez,secreto123,false
+maria@example.com,María García,clave456,false
+carlos@example.com,Carlos López,segura789,true

@@ -1,114 +1,165 @@
 # ADLBuilder - Assistant Definition Language Builder
 
-ADLBuilder es una aplicación web para crear y gestionar configuraciones de asistentes en formato YAML, siguiendo un esquema definido. Permite a los usuarios crear, editar, guardar y compartir definiciones de asistentes de manera estructurada.
+## Description
 
-## Características principales
+ADLBuilder is a web application designed to create, edit, and manage AI assistant configurations in YAML format. The application provides an intuitive interface that allows users to define the behavior, capabilities, and personality of AI assistants following a standardized schema (ADL - Assistant Definition Language).
 
-- **Editor dual**: Modo simple para edición básica y modo avanzado para control total
-- **Validación YAML**: Validación en tiempo real contra el esquema definido
-- **Autenticación de usuarios**: Registro y login para guardar asistentes personales
-- **Biblioteca de plantillas**: Colección de plantillas predefinidas para comenzar rápidamente
-- **Importación/Exportación**: Soporte para importar y exportar archivos YAML
-- **Arquitectura unificada**: Un solo servidor FastAPI que sirve tanto el backend como el frontend
+## Key Features
 
-## Estructura del proyecto
+- **Dual Editor**: Simple mode for basic editing and advanced mode for full control
+- **YAML Validation**: Real-time validation against the defined schema
+- **User Authentication**: Registration and login to save personal assistants
+- **Template Library**: Collection of predefined templates to get started quickly
+- **Import/Export**: Support for importing and exporting YAML files
+- **Unified Architecture**: A single FastAPI server that serves both backend and frontend
+
+## Project Structure
 
 ```
 adlbuilder/
-├── app/                           # Aplicación principal
-│   ├── api/                       # HTTP endpoints (REST)
-│   ├── core/                      # Configuración, DB, etc.
-│   ├── services/                  # Lógica de negocio
-│   ├── schemas/                   # Modelos Pydantic
-│   ├── models/                    # Modelos SQLAlchemy
-│   ├── static/                    # Archivos estáticos
-│   │   ├── css/                   # Estilos
-│   │   ├── js/                    # Módulos JavaScript
-│   │   └── assets/                # Imágenes y otros recursos
-│   ├── templates/                 # Plantillas HTML
-│   └── main.py                    # Punto de entrada FastAPI
-├── schema.yaml                    # Esquema ADL canónico
-├── requirements.txt               # Dependencias Python
-└── README.md                      # Documentación
+│── app/                           # Main application
+│   │── api/                       # HTTP endpoints (REST)
+│   │── core/                      # Configuration, DB, etc.
+│   │── services/                  # Business logic
+│   │── schemas/                   # Pydantic models
+│   │── models/                    # SQLAlchemy models
+│   │── static/                    # Static files (CSS, JS, images)
+│   │── templates/                 # HTML templates
+│   └── main.py                    # FastAPI entry point
+│── scripts/                       # Utility scripts
+│── schema.yaml                    # Canonical ADL schema
+│── requirements.txt               # Python dependencies
+│── start.sh                       # Startup script
+└── venv/                          # Virtual environment (not included in repository)
 ```
 
-## Requisitos
+## Installation
+
+### Prerequisites
 
 - Python 3.8+
-- SQLite (o PostgreSQL para producción)
+- SQLite (or PostgreSQL for production)
 
-## Instalación y ejecución
+### Installation Steps
 
-### Instalación manual
-
-1. Clona el repositorio:
+1. **Clone the repository**
    ```bash
    git clone https://github.com/yourusername/adlbuilder.git
    cd adlbuilder
    ```
 
-2. Instala las dependencias:
+2. **Create and activate virtual environment**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+3. **Install dependencies**
    ```bash
    pip install -r requirements.txt
    ```
 
-3. Inicia la aplicación:
+4. **Start the application**
    ```bash
-   uvicorn app.main:app --reload
+   ./start.sh
+   ```
+   Or manually:
+   ```bash
+   uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload
    ```
 
-4. Accede a la aplicación en http://localhost:8080
+5. **Access the application**
+   - Web application: [http://localhost:8080](http://localhost:8080)
+   - API documentation: [http://localhost:8080/docs](http://localhost:8080/docs)
 
-### Arranque del sistema
+### Docker Installation
 
-Para arrancar el sistema, simplemente ejecuta:
-
-```bash
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8080
-```
-
-Esto iniciará el servidor FastAPI que sirve tanto el backend como el frontend en el puerto 8080 y estará accesible desde cualquier interfaz de red.
-
-### Verificación del sistema
-
-- Aplicación web: http://localhost:8000
-- Documentación API: http://localhost:8000/docs (Swagger UI)
-
-El sistema está correctamente iniciado cuando puedes acceder a la aplicación web.
-
-## Desarrollo
-
-### Servidor
+You can also use Docker to run the application:
 
 ```bash
-pip install -r requirements.txt
-uvicorn app.main:app --reload
+docker-compose up -d
 ```
 
-### Base de datos
+## Application Usage
 
-La aplicación está configurada para inicializar automáticamente la base de datos al arrancar. Esto significa que:
+1. **Registration and Login**
+   - The first registered user automatically receives administrator privileges
+   - Users can register with email, password, and name
 
-- La base de datos SQLite se crea automáticamente si no existe
-- Las tablas necesarias se crean automáticamente al iniciar la aplicación
-- El primer usuario que se registra recibe automáticamente privilegios de administrador
-- El administrador puede gestionar usuarios desde el panel de administración
+2. **Creating an Assistant**
+   - Navigate to the Editor section
+   - Select a template or start from scratch
+   - Fill in the required fields in simple mode or directly edit the YAML in advanced mode
 
-Para reiniciar manualmente la base de datos durante el desarrollo:
+3. **Save and Export**
+   - Assistants are saved to your user account
+   - You can export the definition in YAML format
+
+4. **Administration**
+   - Administrators can manage users from the admin panel
+
+## Utility Scripts
+
+The `scripts/` directory contains tools to facilitate system maintenance and administration:
+
+### check_users.py
+
+Displays information about registered users in the system.
 
 ```bash
-cd backend
-python3 init_database.py --reset
+# From the project root
+./scripts/check_users.py
 ```
 
-### Frontend
+### update_admin.py
 
-El frontend utiliza HTML, CSS y JavaScript vanilla y es servido por FastAPI. Para modificar el frontend, edita los archivos en los directorios `app/static` y `app/templates` y recarga el navegador.
+Manages users in the system. It has three operation modes:
 
-## Internacionalización (i18n)
+1. **Create/update administrator**
+   ```bash
+   ./scripts/update_admin.py admin --email admin@example.com --password secret --name "Administrator"
+   ```
 
-La aplicación está preparada para soportar múltiples idiomas en el futuro. Actualmente, solo se incluye el idioma inglés, pero la estructura está diseñada para facilitar la adición de nuevos idiomas.
+2. **Add an individual user**
+   ```bash
+   ./scripts/update_admin.py add --email user@example.com --password pass123 --name "New User" --admin
+   ```
+   The `--admin` parameter is optional. If included, the user is created as an administrator.
 
-## Licencia
+3. **Import users from CSV**
+   ```bash
+   ./scripts/update_admin.py import --file users.csv --default-password pass123
+   ```
+   
+   CSV format:
+   ```
+   email,name,password,is_admin
+   user1@example.com,User One,pass123,false
+   admin2@example.com,Admin Two,secret,true
+   ```
+   The `password` and `is_admin` fields are optional.
+
+### test_api.py
+
+Runs tests on the application's API.
+
+```bash
+./scripts/test_api.py --url http://localhost:8080 --email admin@example.com --password password
+```
+
+Parameters:
+- `--url`: Base URL of the application (default: http://localhost:8080)
+- `--email`: Administrator email for testing (default: admin@example.com)
+- `--password`: Administrator password (default: password)
+
+## Database
+
+The application uses SQLite by default and automatically creates the database and necessary tables at startup. For production environments, it is recommended to migrate to PostgreSQL.
+
+## Internationalization (i18n)
+
+The application is prepared to support multiple languages. It currently includes English and Spanish, with a structure to easily add more languages.
+
+## License
 
 MIT
