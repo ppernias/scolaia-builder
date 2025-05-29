@@ -20,13 +20,15 @@ const app = {
         
         // Then initialize other components
         auth.init();
-        
-        // Make sure editor is globally accessible
-        window.editor = editor;
-        editor.init();
-        
         templates.init();
         assistants.init();
+        
+        // Initialize editor last since it depends on other components
+        // Load editor template first if we're on the editor page
+        if (window.location.hash === '#editor') {
+            editor.loadEditorTemplate();
+            editor.init();
+        }
         
         // Apply translations again after all components are initialized
         // This ensures that dynamically created content is also translated

@@ -1,0 +1,643 @@
+// Editor functionality for ADLBuilder
+
+const editor = {
+    // Current state
+    state: {
+        mode: 'simple', // 'simple' or 'advanced'
+        currentAssistant: null,
+        yamlContent: '',
+        isModified: false,
+        schema: null,
+        formData: {} // Data from the form
+    },
+    
+    // Initialize editor
+    init: () => {
+        // Set up event listeners for editor mode toggle
+        editor.setupEventListeners();
+    },
+    
+    // Initialize editor content when navigating to editor page
+    initContent: async () => {
+        console.log('Editor initContent called');
+        try {
+            // Load schema if not already loaded
+            if (!editor.state.schema) {
+                console.log('Schema not loaded yet, loading schema...');
+                const schema = await editor.loadSchema();
+                console.log('Schema load result:', schema ? 'Schema loaded' : 'Failed to load schema');
+            } else {
+                console.log('Schema already loaded');
+            }
+            
+            // Update editor mode
+            console.log('Updating editor mode...');
+            editor.updateEditorMode();
+            console.log('Editor mode updated');
+        } catch (error) {
+            console.error('Error in initContent:', error);
+        }
+    },
+    
+    // Load schema
+    loadSchema: async () => {
+        try {
+            console.log('Loading schema...');
+            
+            // Check if schema is already loaded
+            if (editor.state.schema) {
+                console.log('Schema already loaded, returning existing schema');
+                return editor.state.schema;
+            }
+            
+            // Load schema using schemaLoader
+            editor.state.schema = await schemaLoader.loadSchema();
+            
+            if (!editor.state.schema) {
+                throw new Error('Schema loaded but is null or undefined');
+            }
+            
+            console.log('Schema loaded successfully');
+            return editor.state.schema;
+        } catch (error) {
+            console.error('Error loading schema:', error);
+            app.showNotification(i18n.t('editor.schemaLoadError') || 'Error loading schema. Please try again.', 'error');
+            return null;
+        }
+    },
+    
+    // Load editor template
+    loadEditorTemplate: () => {
+        console.log('Loading editor template...');
+        const editorPage = document.getElementById('page-editor');
+        const template = document.getElementById('template-editor');
+        
+        if (editorPage && template) {
+            console.log('Editor page and template found, loading content...');
+            editorPage.innerHTML = template.innerHTML;
+            
+            // Set up event listeners for editor controls
+            editor.setupEditorControls();
+            console.log('Editor template loaded successfully');
+            
+            // Make sure editor is globally accessible
+            window.editor = editor;
+        } else {
+            console.error('Editor page or template not found:', { 
+                editorPage: !!editorPage, 
+                template: !!template 
+            });
+        }
+    },
+    
+    // Prepare editor when navigating to editor page
+    prepareEditor: async () => {
+        console.log('Preparing editor...');
+        try {
+            // Load editor template first
+            editor.loadEditorTemplate();
+            
+            // Initialize editor content
+            console.log('Initializing editor content...');
+            await editor.initContent();
+            console.log('Editor content initialized successfully');
+        } catch (error) {
+            console.error('Error preparing editor:', error);
+        }
+    },
+    
+    // Set up event listeners
+    setupEventListeners: () => {
+        // Tab switching
+        document.querySelectorAll('.editor-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                editor.switchTab(tab.dataset.tab);
+            });
+        });
+        
+        // YAML modal controls
+        document.getElementById('view-yaml')?.addEventListener('click', editor.showYamlModal);
+        document.getElementById('close-yaml-modal')?.addEventListener('click', editor.hideYamlModal);
+        
+        // Form input changes
+        document.querySelector('.editor-form')?.addEventListener('change', () => {
+            editor.updateProgress();
+        });
+        
+        // Listen for login events to update editor state
+        window.addEventListener('auth:login', () => {
+            // If user logs in and we have a modified assistant, ask if they want to save it
+            if (editor.state.isModified) {
+                // TODO: Implement save prompt
+            }
+        });
+    },
+    
+    // Set up editor controls
+    setupEditorControls: () => {
+        // Mode toggle
+        const modeToggle = document.getElementById('editor-mode-toggle');
+        if (modeToggle) {
+            // Set initial state
+            modeToggle.checked = editor.state.mode === 'advanced';
+            editor.updateModeIndicator();
+            
+            modeToggle.addEventListener('change', () => {
+                editor.state.mode = modeToggle.checked ? 'advanced' : 'simple';
+                editor.updateEditorMode();
+                editor.updateModeIndicator();
+            });
+        }
+        
+        // Save button
+        const saveButton = document.getElementById('save-assistant');
+        if (saveButton) {
+            saveButton.addEventListener('click', editor.saveAssistant);
+        }
+        
+        // Export YAML button
+        const exportButton = document.getElementById('export-yaml');
+        if (exportButton) {
+            exportButton.addEventListener('click', editor.exportYaml);
+        }
+        
+        // Import YAML button
+        const importButton = document.getElementById('import-yaml');
+        if (importButton) {
+            importButton.addEventListener('click', editor.importYaml);
+        }
+    },
+    
+    // Update editor mode (simple/advanced)
+    updateEditorMode: () => {
+        console.log('Updating editor mode...');
+        const modeToggle = document.getElementById('editor-mode-toggle');
+        const editorForm = document.querySelector('.editor-form');
+        
+        if (!modeToggle || !editorForm) {
+            console.error('Required elements not found:', {
+                modeToggle: !!modeToggle,
+                editorForm: !!editorForm
+            });
+            return;
+        }
+        
+        // Update mode based on toggle state
+        editor.state.mode = modeToggle.checked ? 'advanced' : 'simple';
+        
+        // Update mode indicator
+        editor.updateModeIndicator();
+        
+        // Update progress bar
+        editor.updateProgress();
+        
+        // Generate form based on mode
+        editor.generateForm();
+        
+        // Update YAML preview
+        editor.updateYamlPreview();
+        
+        // Show/hide advanced tabs
+        const advancedTabs = document.querySelectorAll('.editor-tab[data-tab="advanced"]');
+        advancedTabs.forEach(tab => {
+            tab.style.display = editor.state.mode === 'advanced' ? 'block' : 'none';
+        });
+    },
+    
+    // Update the mode indicator in the editor title
+    updateModeIndicator: () => {
+        const indicator = document.getElementById('editor-mode-indicator');
+        if (indicator) {
+            indicator.textContent = editor.state.mode === 'advanced' ? 'Advanced Mode' : 'Basic Mode';
+            indicator.className = `badge badge-${editor.state.mode === 'advanced' ? 'warning' : 'info'}`;
+        }
+    },
+    
+    // Update progress bar
+    updateProgress: async () => {
+        const progressBar = document.getElementById('editor-progress');
+        const progressText = document.getElementById('editor-progress-text');
+        
+        if (!progressBar || !progressText) return;
+        
+        // Calculate progress based on required fields
+        const progress = await formGenerator.calculateProgress();
+        
+        // Update progress bar
+        progressBar.style.width = `${progress}%`;
+        progressText.textContent = `${progress}% complete`;
+        
+        // Update save button state
+        const saveButton = document.getElementById('save-assistant');
+        if (saveButton) {
+            saveButton.disabled = progress < 100;
+        }
+    },
+    
+    // Setup import YAML button
+    setupImportButton: () => {
+        const importButton = document.getElementById('import-yaml');
+        if (importButton) {
+            importButton.addEventListener('click', editor.importYaml);
+        }
+    },
+    
+    // Generate form based on schema
+    generateForm: () => {
+        console.log('Generating form based on schema...');
+        
+        const editorForm = document.querySelector('.editor-form');
+        if (!editorForm) {
+            console.error('Editor form element not found');
+            return;
+        modeIndicator.textContent = i18n.t(key);
+        modeIndicator.setAttribute('data-i18n', key);
+    }
+},
+    
+// Generate form based on schema
+generateForm: () => {
+    console.log('Generating form based on schema...');
+    
+    const editorForm = document.querySelector('.editor-form');
+    if (!editorForm) {
+        console.error('Editor form element not found');
+        return;
+    }
+    
+    if (!editor.state.schema) {
+        console.error('Schema not loaded, cannot generate form');
+        editorForm.innerHTML = '<div class="error-message">Schema not loaded. Please try refreshing the page.</div>';
+        return;
+    }
+    
+    try {
+        console.log('Parsing YAML content to get existing values');
+        // Parse current YAML content to get existing values
+        let yamlObj = {};
+        if (editor.state.yamlContent) {
+            try {
+                yamlObj = jsyaml.load(editor.state.yamlContent) || {};
+                console.log('Parsed existing YAML content:', yamlObj);
+            } catch (yamlError) {
+                console.error('Error parsing YAML content:', yamlError);
+                // Continue with empty object
+                yamlObj = {};
+            }
+        } else {
+            console.log('No YAML content, creating default structure');
+            // Create default structure based on schema
+            yamlObj = {
+                metadata: {
+                    author: {
+                        name: ''
+                    },
+                    description: {
+                        title: editor.state.currentAssistant?.title || '',
+                        summary: ''
+                    },
+                    visibility: {
+                        is_public: editor.state.currentAssistant?.is_public || true
+                    }
+                },
+                assistant_instructions: {}
+            };
+            
+            // Set default YAML content
+            editor.state.yamlContent = jsyaml.dump(yamlObj);
+            console.log('Created default YAML content');
+        }
+        
+        console.log('Generating form HTML based on schema');
+        // Generate form based on schema and current mode
+        const formHtml = formGenerator.generateForm(editor.state.schema, '', editor.state.mode);
+        
+        if (!formHtml) {
+            throw new Error('Form generator returned empty HTML');
+        }
+        
+        console.log('Setting form HTML content');
+        editorForm.innerHTML = formHtml;
+        
+        console.log('Setting up form event listeners');
+        // Set up event listeners for the form
+        formGenerator.setupFormEventListeners();
+        
+        // Update YAML preview
+        editor.updateYamlPreview();
+        console.log('Form generation complete');
+    } catch (error) {
+        console.error('Error generating form:', error);
+        editorForm.innerHTML = `<div class="error-message">Error generating form: ${error.message}</div>`;
+        app.showNotification('Error generating form. Please try again or switch to advanced mode.', 'error');
+    }
+},
+    
+    // Create new assistant
+    createNew: () => {
+        console.log('Creating new assistant...');
+        
+        // Make sure the editor template is loaded first
+        editor.loadEditorTemplate();
+        
+        // Ensure we're on the editor page
+        const editorPage = document.getElementById('page-editor');
+        if (editorPage) {
+            editorPage.classList.add('active');
+            editorPage.style.display = 'block';
+            
+            // Make all other pages inactive
+            document.querySelectorAll('.page:not(#page-editor)').forEach(page => {
+                page.classList.remove('active');
+                page.style.display = 'none';
+            });
+            
+            // Update navigation
+            document.querySelectorAll('nav a').forEach(link => {
+                link.classList.remove('active');
+            });
+            const navLink = document.getElementById('nav-editor');
+            if (navLink) {
+                navLink.classList.add('active');
+            }
+        } else {
+            console.error('Editor page not found, cannot create new assistant');
+            return;
+        }
+        
+        // Reset state
+        editor.state.currentAssistant = null;
+        
+        // Make sure we have a schema loaded before proceeding
+        if (!editor.state.schema) {
+            console.log('Loading schema before creating new assistant...');
+            editor.loadSchema().then(() => {
+                console.log('Schema loaded, continuing with assistant creation');
+                editor.createNewWithSchema();
+            }).catch(error => {
+                console.error('Failed to load schema:', error);
+                app.showNotification('Error loading schema. Please try again.', 'error');
+            });
+            return;
+        }
+        
+        // If schema is already loaded, proceed directly
+        editor.createNewWithSchema();
+    },
+    
+    // Create new assistant with schema already loaded
+    createNewWithSchema: () => {
+        
+        // Create a properly formatted YAML template that matches the schema
+        editor.state.yamlContent = `metadata:
+  author:
+    name: ${auth.currentUser?.name || 'Anonymous'}
+    role: ${auth.currentUser?.role || ''}
+    organization: ${auth.currentUser?.organization || ''}
+    contact: ''
+  description:
+    title: New Assistant
+    summary: A brief description of what this assistant does
+    coverage: General purpose
+    educational_level:
+      - Other
+    use_cases:
+      - General assistance
+    keywords:
+      - assistant
+      - custom
+  visibility:
+    is_public: true
+  rights: CC by-sa 4.0
+  history: []
+assistant_instructions:
+  role: >
+    You are a helpful assistant that provides clear and concise answers.
+  context:
+    context_definition:
+      - Provide helpful information on various topics
+    integration_strategy:
+      - Respond to user queries directly
+    user_data_handling:
+      - Handle user data with care and privacy
+  behavior:
+    on_tool: Execute tool commands carefully
+    on_greeting: Introduce yourself and list available commands
+    on_help_command: Display help information
+    invalid_command_response: Please use one of the available commands
+    unrelated_topic_response: I'll do my best to help with that topic
+    prompt_visibility: Hidden
+  help_text: >
+    I'm here to help you with your questions. Just ask me anything!
+  final_notes:
+    - Always be helpful and respectful
+    - Provide accurate information
+  capabilities:
+    - Answer questions
+    - Provide information
+  style_guidelines:
+    tone: professional
+    level_of_detail: moderate
+    formatting_rules:
+      - Use markdown for formatting
+      - Keep responses concise
+  tools:
+    commands:
+      /help:
+        display_name: help
+        description: Shows available commands
+        prompt: Show the help menu with available commands
+    options:
+      /lang:
+        display_name: language
+        description: Sets response language
+        prompt: Write in the specified language
+    decorators:
+      +++citesources:
+        display_name: cite sources
+        description: Provide references
+        prompt: Include citations for all claims`;
+        
+        editor.state.isModified = false;
+        
+        // Update UI
+        console.log('Updating editor mode...');
+        editor.updateEditorMode();
+        console.log('Editor mode updated');
+    },
+    
+    // Save assistant
+    saveAssistant: async () => {
+        if (!api.token.isValid()) {
+            app.showNotification('Please log in to save assistants.', 'warning');
+            document.getElementById('login-modal').style.display = 'block';
+            return;
+        }
+        
+        try {
+            // Validate YAML
+            const validationResult = await api.validate.yaml(editor.state.yamlContent);
+            if (!validationResult.valid) {
+                app.showNotification(`Invalid YAML: ${validationResult.errors.join(', ')}`, 'error');
+                return;
+            }
+            
+            // Get title from YAML content
+            let title = 'New Assistant';
+            try {
+                const yamlObj = jsyaml.load(editor.state.yamlContent);
+                title = yamlObj.metadata?.description?.title || title;
+            } catch (e) {
+                console.error('Error parsing YAML:', e);
+            }
+            
+            // Prepare assistant data
+            const assistantData = {
+                title,
+                yaml_content: editor.state.yamlContent,
+                is_public: document.getElementById('assistant-public')?.checked || true
+            };
+            
+            let result;
+            if (editor.state.currentAssistant?.id) {
+                // Update existing assistant
+                result = await api.assistants.update(editor.state.currentAssistant.id, assistantData);
+                app.showNotification('Assistant updated successfully!', 'success');
+            } else {
+                // Create new assistant
+                result = await api.assistants.create(assistantData);
+                app.showNotification('Assistant created successfully!', 'success');
+            }
+            
+            // Update state
+            editor.state.currentAssistant = result;
+            editor.state.isModified = false;
+            
+            // Trigger event for assistant list to refresh
+            window.dispatchEvent(new CustomEvent('assistants:update'));
+        } catch (error) {
+            console.error('Error saving assistant:', error);
+            app.showNotification(error.detail || 'Error saving assistant. Please try again.', 'error');
+        }
+    },
+    
+    // Export YAML
+    exportYaml: () => {
+        // Create blob and download link
+        const blob = new Blob([editor.state.yamlContent], { type: 'text/yaml' });
+        const url = URL.createObjectURL(blob);
+        
+        // Create download link
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${editor.state.currentAssistant?.title || 'assistant'}.yaml`;
+        document.body.appendChild(a);
+        a.click();
+        
+        // Clean up
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        // Show success notification
+        app.showNotification('YAML exported successfully!', 'success');
+    },
+    
+    // Show YAML Modal
+    showYamlModal: () => {
+        const modal = document.getElementById('yaml-modal');
+        if (modal) {
+            modal.classList.add('active');
+            editor.updateYamlPreview(); // Ensure YAML is up to date
+            
+            // Add escape key listener
+            const escapeHandler = (e) => {
+                if (e.key === 'Escape') {
+                    editor.hideYamlModal();
+                    document.removeEventListener('keydown', escapeHandler);
+                }
+            };
+            document.addEventListener('keydown', escapeHandler);
+        }
+    },
+    
+    // Hide YAML Modal
+    hideYamlModal: () => {
+        const modal = document.getElementById('yaml-modal');
+        if (modal) {
+            modal.classList.remove('active');
+        }
+    },
+    
+    // Import YAML
+    importYaml: () => {
+        // Create file input
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.yaml,.yml';
+        
+        // Add event listener
+        input.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    editor.state.yamlContent = event.target.result;
+                    editor.state.isModified = true;
+                    editor.state.currentAssistant = null; // Reset current assistant
+                    
+                    // Update UI
+                    editor.updateEditorMode();
+                    app.showNotification('YAML imported successfully!', 'success');
+                };
+                reader.readAsText(file);
+            }
+        });
+        
+        // Trigger file dialog
+        input.click();
+    },
+    
+    // Update YAML preview
+    updateYamlPreview: () => {
+        console.log('Updating YAML preview...');
+        const yamlOutput = document.getElementById('yaml-output');
+        
+        if (!yamlOutput) {
+            console.error('YAML output element not found');
+            return;
+        }
+        
+        if (editor.state.yamlContent) {
+            yamlOutput.textContent = editor.state.yamlContent;
+            
+            // Apply syntax highlighting if available
+            if (window.hljs) {
+                try {
+                    hljs.highlightElement(yamlOutput);
+                    console.log('Applied syntax highlighting to YAML preview');
+                } catch (error) {
+                    console.error('Error applying syntax highlighting:', error);
+                }
+            }
+        } else {
+            yamlOutput.textContent = '# No YAML content available';
+        }
+    },
+    
+    // Load assistant by ID
+    loadAssistant: async (id) => {
+        try {
+            const assistant = await api.assistants.get(id);
+            editor.state.currentAssistant = assistant;
+            editor.state.yamlContent = assistant.yaml_content;
+            editor.state.isModified = false;
+            
+            // Update UI
+            editor.updateEditorMode();
+            app.navigateTo('editor');
+        } catch (error) {
+            console.error('Error loading assistant:', error);
+            app.showNotification(error.detail || 'Error loading assistant. Please try again.', 'error');
+        }
+    }
+};

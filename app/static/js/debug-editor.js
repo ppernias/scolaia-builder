@@ -132,8 +132,16 @@ function addEditorDebugHooks() {
     
     hookAttempts++;
     
+    // Only try to add hooks if we're on the editor page
+    if (window.location.hash !== '#editor') {
+        return;
+    }
+    
     if (!window.editor) {
-        console.error('Editor object not found');
+        // Only show initialization message on first attempt
+        if (hookAttempts === 1) {
+            console.log('Editor not found, waiting for editor page to load...');
+        }
         // Try again in a moment, but only a limited number of times
         setTimeout(addEditorDebugHooks, 500);
         return;

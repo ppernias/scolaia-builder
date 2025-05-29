@@ -184,27 +184,65 @@
     <template id="template-editor">
         <div class="container editor-container">
             <div class="editor-header">
-                <h2 data-i18n="editor.title">Assistant Editor</h2> <span id="editor-mode-indicator" data-i18n="editor.mode.basic">(basic)</span>
+                <div class="editor-title">
+                    <h2 data-i18n="editor.title">Assistant Editor</h2>
+                    <span id="editor-mode-indicator" class="badge" data-i18n="editor.mode.basic">Basic Mode</span>
+                </div>
                 <div class="editor-controls">
                     <div class="mode-toggle">
                         <label for="editor-mode-toggle">
-                            <input type="checkbox" id="editor-mode-toggle">
+                            <i class="fas fa-code"></i>
                             <span class="checkbox-label" data-i18n="editor.mode.toggle">Advanced Mode</span>
+                            <input type="checkbox" id="editor-mode-toggle" class="toggle-switch">
                         </label>
                     </div>
-                    <button id="save-assistant" class="btn btn-primary">Save</button>
-                    <button id="export-yaml" class="btn btn-outline">Export YAML</button>
-                    <button id="import-yaml" class="btn btn-outline">Import YAML</button>
+                    <button class="btn btn-primary" id="save-assistant">
+                        <i class="fas fa-save"></i>
+                        <span data-i18n="editor.save">Save</span>
+                    </button>
+                    <button class="btn btn-secondary" id="view-yaml">
+                        <i class="fas fa-code"></i>
+                        <span data-i18n="editor.viewYaml">View YAML</span>
+                    </button>
+                    <button class="btn btn-secondary" id="import-yaml">
+                        <i class="fas fa-file-import"></i>
+                        <span data-i18n="editor.import">Import</span>
+                    </button>
+                    <button class="btn btn-secondary" id="export-yaml">
+                        <i class="fas fa-file-export"></i>
+                        <span data-i18n="editor.export">Export</span>
+                    </button>
                 </div>
             </div>
+
+            <div class="editor-progress">
+                <div class="progress-bar" style="width: 0%"></div>
+            </div>
+
+            <div class="editor-tabs">
+                <button class="editor-tab active" data-tab="basic">Basic Information</button>
+                <button class="editor-tab" data-tab="behavior">Behavior</button>
+                <button class="editor-tab" data-tab="responses">Responses</button>
+                <button class="editor-tab" data-tab="advanced">Advanced Settings</button>
+            </div>
+
             <div class="editor-content">
                 <div class="editor-form">
                     <!-- Will be dynamically generated based on schema -->
                 </div>
-                <div class="yaml-preview">
+            </div>
+        </div>
+
+        <!-- YAML Modal -->
+        <div class="yaml-modal" id="yaml-modal">
+            <div class="yaml-modal-content">
+                <div class="yaml-modal-header">
                     <h3>YAML Preview</h3>
-                    <pre id="yaml-output"></pre>
+                    <button class="btn btn-icon" id="close-yaml-modal">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
+                <pre id="yaml-output"></pre>
             </div>
         </div>
     </template>
@@ -268,17 +306,12 @@
         </div>
     </template>
 
-    <!-- JavaScript Base -->
-    <script src="/static/js/debug.js"></script>
-    <script src="/static/js/config.js"></script>
-    
-    <!-- Core Dependencies -->
-    <script src="/static/js/api.js"></script>
-    <script src="/static/js/auth.js"></script>
-    <script src="/static/js/i18n.js"></script>
+    <!-- Application Scripts -->
+    <script src="/static/js/config.js?v=1.0.5"></script>
+    <script src="/static/js/i18n.js?v=1.0.5"></script>
     
     <!-- Main Application -->
-    <script src="/static/js/app.js?v=1.0.1"></script>
+    <script src="/static/js/app.js?v=1.0.5"></script>
     
     <!-- Third Party Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
@@ -286,13 +319,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
     
     <!-- Application Modules -->
-    <script src="/static/js/schema-loader.js"></script>
-    <script src="/static/js/form-generator.js"></script>
-    <script src="/static/js/editor.js"></script>
-    <script src="/static/js/templates.js"></script>
-    <script src="/static/js/assistants.js"></script>
-    <script src="/static/js/admin.js"></script>
-    <script src="/static/js/profile.js"></script>
-    <script src="/static/js/debug-editor.js"></script>
+    <script src="/static/js/api.js?v=1.0.5"></script>
+    <script src="/static/js/auth.js?v=1.0.5"></script>
+    <script src="/static/js/schema-loader.js?v=1.0.5"></script>
+    <script src="/static/js/form-generator.js?v=1.0.5"></script>
+    <script type="module" src="/static/js/editor.js?v=1.0.7"></script>
+    <script src="/static/js/profile.js?v=1.0.5"></script>
+    <script src="/static/js/admin.js?v=1.0.5"></script>
+    <script src="/static/js/templates.js?v=1.0.5"></script>
+    <script src="/static/js/assistants.js?v=1.0.6"></script>
 </body>
 </html>
