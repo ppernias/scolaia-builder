@@ -2,9 +2,26 @@ from fastapi import FastAPI, Request, Depends, HTTPException, status
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.datastructures import URL
 from sqlalchemy.orm import Session
 import os
 from pathlib import Path
+
+class ProxyHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        if "X-Forwarded-Proto" in request.headers:
+            request.scope["scheme"] = request.headers["X-Forwarded-Proto"]
+        
+        if "X-Forwarded-Host" in request.headers:
+            request.scope["headers"] = [
+                (k, v) if k != b"host" else (b"host", request.headers["X-Forwarded-Host"].encode())
+                for k, v in request.scope["headers"]
+            ]
+        
+        response = await call_next(request)
+        return response
 
 # Importar módulos de la aplicación
 from app.core.config import settings
@@ -20,13 +37,21 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
-# Configurar middleware CORS
+# Configurar middlewares
+app.add_middleware(
+    TrustedHostMiddleware,
+    allowed_hosts=[settings.ALLOWED_HOSTS] if settings.ALLOWED_HOSTS else ["*"]
+)
+
+app.add_middleware(ProxyHeadersMiddleware)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Permitir todos los orígenes en desarrollo
+    allow_origins=[f"https://{settings.ALLOWED_HOSTS}", f"http://{settings.ALLOWED_HOSTS}"] if settings.ALLOWED_HOSTS else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"]
 )
 
 # Montar archivos estáticos

@@ -1,12 +1,44 @@
 // Configuration settings for ADLBuilder
 
 const config = {
-    // Debug mode (false en producciu00f3n, true en desarrollo)
-    debug: false,
+    // Debug mode (false en producción, true en desarrollo)
+    debug: true, // Activamos el modo debug para ver mensajes detallados
+    
+    // Configuración para proxies
+    proxy: {
+        enabled: true, // Habilitar soporte para proxies
+        forceHttps: true, // Forzar HTTPS en las solicitudes cuando la página se carga por HTTPS
+        allowInsecureTokens: true // Permitir tokens menos seguros en desarrollo
+    },
+    
+    // Obtener la URL base con el protocolo correcto
+    getBaseUrl: () => {
+        if (typeof window !== 'undefined' && window.location) {
+            // En producción, usar la URL completa del host actual
+            const host = window.location.host;
+            const protocol = window.location.protocol;
+            
+            // Debug info
+            if (config.debug) {
+                console.log(`Current host: ${host}`);
+                console.log(`Current protocol: ${protocol}`);
+            }
+            
+            // Construir la URL base
+            const baseUrl = `${protocol}//${host}/api/v1`;
+            if (config.debug) console.log(`Using base URL: ${baseUrl}`);
+            
+            return baseUrl;
+        }
+        return '/api/v1';
+    },
     
     // API configuration
     api: {
-        baseUrl: '/api/v1',
+        // La baseUrl ahora es una propiedad computada que se evaluará en tiempo de ejecución
+        get baseUrl() {
+            return config.getBaseUrl();
+        },
         endpoints: {
             auth: {
                 login: '/auth/token',

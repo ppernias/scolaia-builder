@@ -20,8 +20,9 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     TOKEN_ISSUER: str = "adlbuilder"
     
-    # CORS
-    BACKEND_CORS_ORIGINS: list[str] = ["http://localhost", "http://localhost:8000", "http://127.0.0.1:8000", "*"]
+    # CORS y Hosts permitidos
+    ALLOWED_HOSTS: str = "builder.scolaia.net"
+    BACKEND_CORS_ORIGINS: list[str] = ["http://localhost", "http://localhost:8000", "http://127.0.0.1:8000", "https://builder.scolaia.net"]
     
     # Internationalization
     DEFAULT_LANGUAGE: str = "en"

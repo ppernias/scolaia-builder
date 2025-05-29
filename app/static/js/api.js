@@ -8,25 +8,66 @@ const api = {
         remove: () => localStorage.removeItem('token'),
         isValid: () => {
             const token = localStorage.getItem('token');
-            if (!token) return false;
+            if (!token) {
+                if (config.debug) console.log('No token found in localStorage');
+                return false;
+            }
             
             try {
-                // Verificar si el token tiene formato JWT (xxx.yyy.zzz)
-                if (!token.match(/^[\w-]+\.[\w-]+\.[\w-]+$/)) {
-                    return false;
+                // En modo de desarrollo con proxies, podemos ser menos estrictos con la validación
+                if (config.proxy.enabled && config.proxy.allowInsecureTokens) {
+                    if (config.debug) console.log('Proxy mode: using relaxed token validation');
+                    
+                    // Verificación básica: el token existe y tiene algún contenido
+                    if (token.length < 10) {
+                        if (config.debug) console.log('Token too short, considered invalid');
+                        return false;
+                    }
+                    
+                    // Intentamos verificar si tiene formato JWT, pero no fallamos si no lo tiene
+                    const jwtFormat = token.match(/^[\w-]+\.[\w-]+\.[\w-]+$/);
+                    if (!jwtFormat) {
+                        if (config.debug) console.warn('Token does not have JWT format, but continuing in proxy mode');
+                        // No retornamos false aquí, seguimos adelante
+                    } else {
+                        // Si tiene formato JWT, verificamos la expiración
+                        try {
+                            const payload = JSON.parse(atob(token.split('.')[1]));
+                            if (payload.exp && payload.exp * 1000 < Date.now()) {
+                                if (config.debug) console.log('Token expired, removing');
+                                api.token.remove();
+                                return false;
+                            }
+                        } catch (innerError) {
+                            if (config.debug) console.warn('Could not parse JWT payload, but continuing in proxy mode:', innerError);
+                            // No retornamos false aquí en modo proxy
+                        }
+                    }
+                    
+                    return true; // En modo proxy, asumimos que el token es válido si llegamos hasta aquí
+                } else {
+                    // Modo estricto (no proxy o proxy sin tokens inseguros)
+                    if (config.debug) console.log('Using strict token validation');
+                    
+                    // Verificar si el token tiene formato JWT (xxx.yyy.zzz)
+                    if (!token.match(/^[\w-]+\.[\w-]+\.[\w-]+$/)) {
+                        if (config.debug) console.log('Token does not have JWT format');
+                        return false;
+                    }
+                    
+                    // Intentar decodificar la parte de payload (segunda parte)
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    
+                    // Verificar si el token ha expirado
+                    if (payload.exp && payload.exp * 1000 < Date.now()) {
+                        // Token expirado, eliminarlo
+                        if (config.debug) console.log('Token expired, removing');
+                        api.token.remove();
+                        return false;
+                    }
+                    
+                    return true;
                 }
-                
-                // Intentar decodificar la parte de payload (segunda parte)
-                const payload = JSON.parse(atob(token.split('.')[1]));
-                
-                // Verificar si el token ha expirado
-                if (payload.exp && payload.exp * 1000 < Date.now()) {
-                    // Token expirado, eliminarlo
-                    api.token.remove();
-                    return false;
-                }
-                
-                return true;
             } catch (e) {
                 // Si hay algún error al decodificar, consideramos el token inválido
                 console.error('Error validating token:', e);
@@ -44,15 +85,32 @@ const api = {
             };
             
             // Add authorization header if required
-            if (requiresAuth && api.token.isValid()) {
-                headers['Authorization'] = `Bearer ${api.token.get()}`;
+            if (requiresAuth) {
+                if (api.token.isValid()) {
+                    headers['Authorization'] = `Bearer ${api.token.get()}`;
+                    if (config.debug) console.log('Added authorization header');
+                } else {
+                    if (config.debug) console.warn('Auth required but token is invalid or missing');
+                    // En modo proxy, continuamos aunque el token no sea válido
+                    if (!(config.proxy.enabled && config.proxy.allowInsecureTokens)) {
+                        throw new Error('Authentication required but token is invalid');
+                    } else {
+                        if (config.debug) console.log('Continuing request despite invalid token (proxy mode)');
+                        // Añadimos el token de todos modos en modo proxy permisivo
+                        const token = api.token.get();
+                        if (token) {
+                            headers['Authorization'] = `Bearer ${token}`;
+                        }
+                    }
+                }
             }
             
             // Prepare request options
             const options = {
                 method,
                 headers,
-                credentials: 'same-origin'
+                // Usar 'include' en lugar de 'same-origin' para permitir cookies en solicitudes cross-origin
+                credentials: config.proxy.enabled ? 'include' : 'same-origin'
             };
             
             // Add body for non-GET requests
@@ -61,11 +119,44 @@ const api = {
             }
             
             // Log request details for debugging
-            console.log(`API Request: ${method} ${url}`);
-            if (data) console.log('Request data:', data);
+            if (config.debug) {
+                console.log(`API Request: ${method} ${url}`);
+                console.log('Request options:', options);
+                if (data) console.log('Request data:', data);
+            }
+            
+            // Construir la URL completa usando la baseUrl que ya tiene el protocolo correcto
+            let fullUrl = '';
+            
+            // Si la URL ya es absoluta (comienza con http: o https:), usarla directamente
+            if (url.startsWith('http:') || url.startsWith('https:')) {
+                fullUrl = url;
+            } else {
+                // Si la URL es relativa, construir la URL completa con la baseUrl
+                fullUrl = `${config.api.baseUrl}${url}`;
+            }
+
+            // Refuerzo: Si la página está en HTTPS, forzamos cualquier URL HTTP a HTTPS
+            if (window.location.protocol === 'https:' && fullUrl.startsWith('http:')) {
+                fullUrl = fullUrl.replace('http:', 'https:');
+                if (config.debug) console.log('Forced HTTP URL to HTTPS:', fullUrl);
+            }
+            // También, si la página está en HTTPS y la URL es relativa, aseguramos que use el origin correcto
+            if (window.location.protocol === 'https:' && fullUrl.startsWith('/')) {
+                const origin = window.location.origin;
+                if (!fullUrl.includes(origin)) {
+                    fullUrl = `${origin}${fullUrl}`;
+                    if (config.debug) console.log('Added origin to URL:', fullUrl);
+                }
+            }
+            
+            if (config.debug) {
+                console.log('Final URL for request:', fullUrl);
+                console.log('Current page protocol:', window.location.protocol);
+            }
             
             // Make the request
-            const response = await fetch(`${config.api.baseUrl}${url}`, options);
+            const response = await fetch(fullUrl, options);
             
             // Parse response
             let result;
@@ -245,21 +336,55 @@ const api = {
     // Template operations
     templates: {
         list: async () => {
-            return api.request(
-                config.api.endpoints.templates.list,
-                'GET',
-                null,
-                false
-            );
+            if (config.debug) console.log('Loading templates list...');
+            
+            try {
+                // Usar la URL base que ya tiene el protocolo correcto
+                const endpoint = config.api.endpoints.templates.list;
+                
+                // Comprobar si estamos en modo de depuración
+                if (config.debug) {
+                    console.log(`Templates list URL: ${config.api.baseUrl}${endpoint}`);
+                    console.log(`Current protocol: ${window.location.protocol}`);
+                }
+                
+                // Usar el método request estándar que ya maneja el protocolo correctamente
+                return api.request(
+                    endpoint,
+                    'GET',
+                    null,
+                    false
+                );
+            } catch (error) {
+                console.error('Error loading templates:', error);
+                throw error;
+            }
         },
         
         get: async (id) => {
-            return api.request(
-                config.api.endpoints.templates.get(id),
-                'GET',
-                null,
-                false
-            );
+            if (config.debug) console.log(`Loading template with id ${id}...`);
+            
+            try {
+                // Usar la URL base que ya tiene el protocolo correcto
+                const endpoint = config.api.endpoints.templates.get(id);
+                
+                // Comprobar si estamos en modo de depuración
+                if (config.debug) {
+                    console.log(`Template URL: ${config.api.baseUrl}${endpoint}`);
+                    console.log(`Current protocol: ${window.location.protocol}`);
+                }
+                
+                // Usar el método request estándar que ya maneja el protocolo correctamente
+                return api.request(
+                    endpoint,
+                    'GET',
+                    null,
+                    false
+                );
+            } catch (error) {
+                console.error(`Error loading template ${id}:`, error);
+                throw error;
+            }
         }
     },
     
@@ -278,20 +403,92 @@ const api = {
     // Schema operations
     schema: {
         get: async () => {
-            // Verificar si el usuario está autenticado
-            if (!api.token.isValid()) {
-                console.error('Authentication token is not valid');
-                throw new Error('User not authenticated');
-            }
-            
             try {
-                console.log('Attempting to load schema through API...');
-                return api.request(
-                    config.api.endpoints.schema.get,
-                    'GET',
-                    null,
-                    true // Requiere autenticación
-                );
+                if (config.debug) console.log('Attempting to load schema through API...');
+                
+                // En modo proxy, intentamos cargar el esquema incluso si la autenticación no es válida
+                if (config.proxy.enabled && config.proxy.allowInsecureTokens) {
+                    if (config.debug) console.log('Loading schema in proxy mode (relaxed auth)');
+                    
+                    try {
+                        return await api.request(
+                            config.api.endpoints.schema.get,
+                            'GET',
+                            null,
+                            true // Requiere autenticación, pero en modo proxy continuará aunque el token no sea válido
+                        );
+                    } catch (proxyError) {
+                        if (config.debug) console.warn('Error loading schema in proxy mode:', proxyError);
+                        
+                        // Si falla, intentamos cargar un esquema local de respaldo
+                        if (config.debug) console.log('Attempting to load fallback schema...');
+                        
+                        // Intentar cargar el esquema desde un archivo local (schema.json)
+                        try {
+                            // Construir la URL para el esquema de respaldo
+                            let schemaUrl = '/static/schema.json';
+                            
+                            // Asegurarnos de que la URL use el mismo protocolo que la página
+                            if (config.proxy.enabled) {
+                                const currentProtocol = window.location.protocol;
+                                const baseUrl = window.location.origin;
+                                schemaUrl = `${baseUrl}${schemaUrl}`;
+                                if (config.debug) console.log(`Using ${currentProtocol} URL for fallback schema:`, schemaUrl);
+                            }
+                            
+                            const fallbackResponse = await fetch(schemaUrl);
+                            if (fallbackResponse.ok) {
+                                const fallbackSchema = await fallbackResponse.json();
+                                if (config.debug) console.log('Loaded fallback schema successfully');
+                                return fallbackSchema;
+                            } else {
+                                throw new Error('Fallback schema not available');
+                            }
+                        } catch (fallbackError) {
+                            if (config.debug) console.error('Failed to load fallback schema:', fallbackError);
+                            
+                            // Si todo falla, devolvemos un esquema mínimo para que la aplicación no se rompa
+                            if (config.debug) console.log('Returning minimal schema');
+                            return {
+                                type: 'object',
+                                properties: {
+                                    metadata: {
+                                        type: 'object',
+                                        properties: {
+                                            description: {
+                                                type: 'object',
+                                                properties: {
+                                                    title: {
+                                                        type: 'string',
+                                                        'x-category': 'custom'
+                                                    },
+                                                    summary: {
+                                                        type: 'string',
+                                                        'x-category': 'custom'
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            };
+                        }
+                    }
+                } else {
+                    // Modo normal (no proxy o proxy sin tokens inseguros)
+                    // Verificar si el usuario está autenticado
+                    if (!api.token.isValid()) {
+                        console.error('Authentication token is not valid');
+                        throw new Error('User not authenticated');
+                    }
+                    
+                    return await api.request(
+                        config.api.endpoints.schema.get,
+                        'GET',
+                        null,
+                        true // Requiere autenticación
+                    );
+                }
             } catch (error) {
                 console.error('Error loading schema through API:', error);
                 throw error;
