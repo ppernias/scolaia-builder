@@ -13,8 +13,15 @@ const profile = {
     init: async () => {
         console.log('Inicializando módulo de perfil...');
         
+        // Verificar que auth esté disponible y el usuario esté autenticado
+        if (typeof auth === 'undefined') {
+            console.error('El módulo auth no está disponible');
+            app.showNotification('Error al cargar el perfil: módulo de autenticación no disponible', 'error');
+            return;
+        }
+        
         // Verificar si el usuario está autenticado
-        if (auth && auth.currentUser) {
+        if (auth.currentUser) {
             console.log('Usuario autenticado, cargando perfil...');
             
             // Cargar plantilla de perfil

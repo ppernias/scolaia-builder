@@ -218,7 +218,7 @@ const app = {
             }
         } else if (page === 'profile') {
             // Load user profile
-            profile.loadProfile();
+            profile.init();
         }
     },
     
