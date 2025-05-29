@@ -1,6 +1,6 @@
 // Funcionalidad de administraciu00f3n para ADLBuilder
 
-const admin = {
+window.admin = {
     // Estado actual
     state: {
         users: [],
@@ -15,15 +15,15 @@ const admin = {
         search: ''
     },
     
-    // Inicializar administraciu00f3n
+    // Inicializar administración
     init: async () => {
-        console.log('Inicializando módulo de administración...');
+        debug.info('Inicializando módulo de administración');
         
         // Verificar si el usuario actual es administrador
         if (auth && auth.currentUser && auth.currentUser.is_admin) {
-            console.log('Usuario administrador verificado, cargando panel de administración...');
+            debug.verbose('Usuario administrador verificado');
             
-            // Cargar plantilla de administraciu00f3n
+            // Cargar plantilla de administración
             admin.loadAdminTemplate();
             
             // Configurar event listeners
@@ -32,49 +32,45 @@ const admin = {
             // Cargar usuarios
             try {
                 await admin.loadUsers();
-                console.log('Usuarios cargados correctamente');
+                debug.info('Usuarios cargados correctamente');
             } catch (error) {
-                console.error('Error al cargar usuarios:', error);
+                debug.error('Error al cargar usuarios:', error);
                 app.showNotification('Error al cargar usuarios. Por favor, intenta de nuevo.', 'error');
             }
         } else {
-            console.warn('El usuario actual no tiene permisos de administrador. No se cargaru00e1 el panel de administraciu00f3n.');
+            debug.warn('Usuario sin permisos de administrador');
             app.showNotification('No tienes permisos para acceder al panel de administración', 'error');
             app.navigateTo('home');
         }
     },
     
-    // Cargar plantilla de administraciu00f3n
+    // Cargar plantilla de administración
     loadAdminTemplate: () => {
-        console.log('Cargando plantilla de administración...');
+        debug.verbose('Cargando plantilla de administración');
         
         // Crear la página de administración si no existe
         let adminPage = document.getElementById('page-admin');
         if (!adminPage) {
-            console.log('Creando página de administración...');
             adminPage = document.createElement('div');
             adminPage.id = 'page-admin';
             adminPage.className = 'page active';
             const mainElement = document.querySelector('main');
             if (mainElement) {
                 mainElement.appendChild(adminPage);
-                console.log('Página de administración agregada al DOM');
+                debug.verbose('Página de administración creada');
             } else {
-                console.error('No se pudo encontrar el elemento main para agregar la página de administración');
+                debug.error('No se pudo encontrar el elemento main');
                 return;
             }
         } else {
-            console.log('Página de administración ya existe');
             // Limpiar el contenido existente
             adminPage.innerHTML = '';
             // Asegurar que la página sea visible
             adminPage.classList.add('active');
             adminPage.classList.remove('hidden');
-            console.log('Página de administración marcada como visible');
         }
         
         // Crear el contenido directamente sin usar template
-        console.log('Creando contenido del panel de administración...');
         
         // Contenedor principal
         const container = document.createElement('div');
@@ -125,9 +121,7 @@ const admin = {
         
         // Asegurarse de que el panel sea visible
         adminPage.style.display = 'block';
-        console.log('Estructura del panel de administración creada correctamente');
-        
-        console.log('Plantilla de administración cargada correctamente');
+        debug.verbose('Panel de administración creado');
     },
     
     // Configurar event listeners
@@ -179,39 +173,41 @@ const admin = {
     
     // Cargar usuarios desde la API con paginación
     loadUsers: async () => {
+        debug.verbose('Cargando usuarios');
+        
+        // Actualizar estado
+        admin.state.loading = true;
+        admin.state.error = null;
+        
         try {
-            // Mostrar mensaje de carga
-            admin.state.loading = true;
-            admin.state.error = null;
-            admin.renderUsers(); // Mostrar mensaje de carga inmediatamente
+            // Obtener el total de usuarios para la paginación
+            const totalUsers = await api.admin.countUsers(admin.state.search);
             
-            // Obtener el número total de usuarios para la paginación
-            const countResult = await api.admin.countUsers(admin.state.search);
-            admin.state.pagination.total = countResult.total;
-            admin.state.pagination.totalPages = Math.ceil(countResult.total / admin.state.pagination.limit);
+            // Calcular el total de páginas
+            admin.state.pagination.total = totalUsers;
+            admin.state.pagination.totalPages = Math.ceil(totalUsers / admin.state.pagination.limit);
             
-            // Cargar usuarios con paginación
-            const usersList = await api.admin.listUsers(
+            // Obtener usuarios para la página actual
+            const users = await api.admin.listUsers(
                 admin.state.pagination.page,
                 admin.state.pagination.limit,
                 admin.state.search
             );
             
-            // Actualizar el estado con los usuarios cargados
-            admin.state.users = usersList;
-            admin.state.loading = false; // Desactivar el estado de carga antes de renderizar
+            // Actualizar estado
+            admin.state.users = users;
+            admin.state.loading = false;
             
-            // Actualizar UI
+            // Renderizar usuarios
             admin.renderUsers();
-            admin.updatePaginationControls();
             
-            console.log('Usuarios cargados y renderizados:', usersList);
+            // Actualizar controles de paginación
+            admin.updatePaginationControls();
         } catch (error) {
-            console.error('Error al cargar usuarios:', error);
-            admin.state.error = error.detail || 'Error al cargar usuarios';
-            admin.state.loading = false; // Desactivar el estado de carga en caso de error
-            admin.renderUsers(); // Renderizar para mostrar el mensaje de error
-            app.showNotification('Error al cargar usuarios. Por favor, inténtalo de nuevo.', 'error');
+            debug.error('Error al cargar usuarios:', error);
+            admin.state.error = error;
+            admin.state.loading = false;
+            app.showNotification('Error al cargar usuarios', 'error');
         }
     },
     
@@ -241,11 +237,11 @@ const admin = {
     renderUsers: (users = admin.state.users) => {
         const usersList = document.querySelector('.users-list');
         if (!usersList) {
-            console.error('No se encontró el elemento .users-list');
+            debug.error('No se encontró el elemento .users-list');
             return;
         }
         
-        console.log('Renderizando usuarios:', users);
+        debug.verbose('Renderizando usuarios:', users.length);
         
         // Mostrar mensaje de carga
         if (admin.state.loading) {
@@ -326,7 +322,7 @@ const admin = {
             
             app.showNotification('Usuario eliminado correctamente', 'success');
         } catch (error) {
-            console.error('Error al eliminar usuario:', error);
+            debug.error('Error al eliminar usuario:', error);
             app.showNotification(error.detail || 'Error al eliminar usuario', 'error');
         }
     },
@@ -341,7 +337,7 @@ const admin = {
             
             app.showNotification('Usuario promovido a administrador correctamente', 'success');
         } catch (error) {
-            console.error('Error al promover usuario:', error);
+            debug.error('Error al promover usuario:', error);
             app.showNotification(error.detail || 'Error al promover usuario', 'error');
         }
     },
@@ -356,7 +352,7 @@ const admin = {
             
             app.showNotification('Privilegios de administrador removidos correctamente', 'success');
         } catch (error) {
-            console.error('Error al quitar privilegios de administrador:', error);
+            debug.error('Error al quitar privilegios de administrador:', error);
             app.showNotification(error.detail || 'Error al quitar privilegios de administrador', 'error');
         }
     }

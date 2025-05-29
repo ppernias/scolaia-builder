@@ -1,6 +1,7 @@
 // API handling for ADLBuilder
 
-const api = {
+// Create API object and expose it to the global window object
+window.api = {
     // Token management
     token: {
         get: () => localStorage.getItem('token'),

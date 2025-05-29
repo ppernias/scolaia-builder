@@ -1,8 +1,16 @@
 // Configuration settings for ADLBuilder
 
-const config = {
-    // Debug mode (false en producción, true en desarrollo)
-    debug: true, // Activamos el modo debug para ver mensajes detallados
+window.config = {
+    // Debug settings
+    debug: false, // Set to false by default to reduce console noise
+    
+    // Debug levels configuration
+    debugLevels: {
+        error: true,    // Always show errors
+        warn: true,     // Show warnings
+        info: true,     // Temporarily show informational messages for debugging
+        verbose: false  // Hide verbose debugging messages
+    },
     
     // Configuración para proxies
     proxy: {

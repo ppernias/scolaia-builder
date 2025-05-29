@@ -1,6 +1,7 @@
 // Internationalization module for ADLBuilder
 
-const i18n = {
+// Create i18n object and expose it to the global window object
+window.i18n = {
     // Current language
     currentLang: 'en',
     
@@ -171,7 +172,7 @@ const i18n = {
     // Set language
     setLanguage: (lang) => {
         if (i18n.translations[lang]) {
-            console.log('Changing language to:', lang);
+            debug.info('Changing language to:', lang);
             i18n.currentLang = lang;
             localStorage.setItem('language', lang);
             
@@ -204,7 +205,7 @@ const i18n = {
     
     // Apply translations to the DOM
     applyTranslations: () => {
-        console.log('Applying translations for language:', i18n.currentLang);
+        debug.verbose('Applying translations for language:', i18n.currentLang);
         
         // Update elements with data-i18n attribute
         document.querySelectorAll('[data-i18n]').forEach(el => {

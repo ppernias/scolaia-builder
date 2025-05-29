@@ -4,6 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ADLBuilder - Assistant Definition Language Builder</title>
+    
+    <!-- Anti-cache script for development -->
+    <script>
+        // Prevent caching in development
+        (function() {
+            // Add timestamp to all script and CSS URLs to prevent caching
+            const addTimestamp = () => {
+                const timestamp = new Date().getTime();
+                document.querySelectorAll('script[src], link[rel="stylesheet"]').forEach(element => {
+                    if (element.src) {
+                        element.src = element.src.split('?')[0] + '?t=' + timestamp;
+                    } else if (element.href) {
+                        element.href = element.href.split('?')[0] + '?t=' + timestamp;
+                    }
+                });
+            };
+            
+            // Run once when DOM is loaded
+            document.addEventListener('DOMContentLoaded', addTimestamp);
+        })();
+    </script>
     <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
     <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="/static/css/base.css">
@@ -227,7 +248,7 @@
             </div>
 
             <div class="editor-content">
-                <div class="editor-form">
+                <div id="editor-form-container" class="editor-form">
                     <!-- Will be dynamically generated based on schema -->
                 </div>
             </div>
@@ -306,27 +327,32 @@
         </div>
     </template>
 
-    <!-- Application Scripts -->
-    <script src="/static/js/config.js?v=1.0.5"></script>
-    <script src="/static/js/i18n.js?v=1.0.5"></script>
-    
-    <!-- Main Application -->
-    <script src="/static/js/app.js?v=1.0.5"></script>
-    
     <!-- Third Party Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/yaml.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
     
-    <!-- Application Modules -->
-    <script src="/static/js/api.js?v=1.0.5"></script>
-    <script src="/static/js/auth.js?v=1.0.5"></script>
-    <script src="/static/js/schema-loader.js?v=1.0.5"></script>
-    <script src="/static/js/form-generator.js?v=1.0.5"></script>
-    <script type="module" src="/static/js/editor.js?v=1.0.7"></script>
-    <script src="/static/js/profile.js?v=1.0.5"></script>
-    <script src="/static/js/admin.js?v=1.0.5"></script>
-    <script src="/static/js/templates.js?v=1.0.5"></script>
-    <script src="/static/js/assistants.js?v=1.0.6"></script>
+    <!-- Configuration and Utilities -->
+    <script src="/static/js/config.js"></script>
+    <script src="/static/js/debug.js"></script>
+    <script src="/static/js/i18n.js"></script>
+    
+    <!-- Core Dependencies -->
+    <script src="/static/js/form-generator.js"></script>
+    <script src="/static/js/schema-loader.js"></script>
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/auth.js"></script>
+    
+    <!-- Feature Modules -->
+    <script src="/static/js/templates.js"></script>
+    <script src="/static/js/profile.js"></script>
+    <script src="/static/js/admin.js"></script>
+    <script src="/static/js/assistants.js"></script>
+    
+    <!-- Main Application -->
+    <script src="/static/js/app.js"></script>
+    
+    <!-- Editor Module (ES6) - Load last -->
+    <script type="module" src="/static/js/editor.js"></script>
 </body>
 </html>

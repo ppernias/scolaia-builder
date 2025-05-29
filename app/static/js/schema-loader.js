@@ -1,13 +1,14 @@
 // Schema loader for ADLBuilder
 
-const schemaLoader = {
+// Create schemaLoader object and expose it to the global window object
+window.schemaLoader = {
     // Current schema
     schema: null,
     
     // Load schema from server
     loadSchema: async () => {
         try {
-            console.log('Attempting to load schema...');
+            debug.verbose('Attempting to load schema...');
             
             // Verificar si el usuario estu00e1 autenticado
             if (!api.token.isValid()) {
@@ -16,12 +17,12 @@ const schemaLoader = {
             }
             
             // Usar la funciu00f3n api.schema.get() para cargar el schema
-            console.log('Using api.schema.get() to load schema...');
+            debug.verbose('Using api.schema.get() to load schema...');
             const data = await api.schema.get();
             
-            console.log('Schema data received:', data ? 'Data exists' : 'No data');
+            debug.verbose('Schema data received:', data ? 'Data exists' : 'No data');
             schemaLoader.schema = data;
-            console.log('Schema loaded successfully');
+            debug.info('Schema loaded successfully');
             
             // Dispatch event for components that need to know about schema changes
             window.dispatchEvent(new CustomEvent('schema:loaded', { detail: { schema: schemaLoader.schema } }));

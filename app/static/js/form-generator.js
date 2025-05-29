@@ -1,13 +1,27 @@
 // Dynamic form generator for ADLBuilder
 
-const formGenerator = {
+// Create formGenerator object
+window.formGenerator = {
     // Generate form based on schema
     generateForm: (schema, parentPath = '', mode = 'simple') => {
-        console.log('Generating form with schema:', schema);
-        console.log('Mode:', mode);
+        debug.info('Generating form with schema:', schema);
+        debug.info('Mode:', mode);
+        
+        // Log schema properties for debugging
+        if (schema && schema.properties) {
+            debug.info('Schema properties:', Object.keys(schema.properties));
+            
+            // Check if there are any custom properties for simple mode
+            if (mode === 'simple') {
+                const customProps = Object.entries(schema.properties)
+                    .filter(([key, prop]) => prop['x-category'] === 'custom')
+                    .map(([key]) => key);
+                debug.info('Custom properties for simple mode:', customProps.length ? customProps : 'None');
+            }
+        }
         
         if (!schema || !schema.properties) {
-            console.error('Invalid schema structure:', schema);
+            debug.error('Invalid schema structure:', schema);
             return '<div class="error-message">Invalid schema structure</div>';
         }
         
@@ -17,7 +31,7 @@ const formGenerator = {
         // Process each property in the schema
         for (const [key, property] of Object.entries(schema.properties)) {
             const currentPath = parentPath ? `${parentPath}.${key}` : key;
-            console.log(`Processing property: ${currentPath}, type: ${property.type}, category: ${property['x-category']}`);
+            debug.verbose(`Processing property: ${currentPath}, type: ${property.type}, category: ${property['x-category']}`);
             
             // For objects, recursively generate form elements for their properties
             if (property.type === 'object' && property.properties) {
@@ -35,7 +49,7 @@ const formGenerator = {
             } else {
                 // Skip non-custom properties in simple mode
                 if (mode === 'simple' && property['x-category'] !== 'custom') {
-                    console.log(`Skipping non-custom property: ${currentPath}`);
+                    debug.verbose(`Skipping non-custom property: ${currentPath}`);
                     continue;
                 }
                 
@@ -50,7 +64,7 @@ const formGenerator = {
         
         // If no fields were generated, return a message
         if (!hasFields) {
-            console.warn('No fields were generated for the form');
+            debug.warn('No fields were generated for the form');
             if (mode === 'simple') {
                 return '<div class="info-message">No editable fields available in simple mode. Switch to advanced mode to edit all fields.</div>';
             }
@@ -588,6 +602,97 @@ const formGenerator = {
         editor.state.yamlContent = jsyaml.dump(yamlObj);
         editor.state.isModified = true;
         editor.updateYamlPreview();
+    },
+    
+    // Update YAML content based on form changes
+    // Get form data from the form
+    getFormData: () => {
+        debug.verbose('Getting form data from editor');
+        
+        // If we have YAML content, use that as the source of truth
+        if (editor.state.yamlContent) {
+            try {
+                const yamlObj = jsyaml.load(editor.state.yamlContent);
+                debug.verbose('Form data loaded from YAML content');
+                return yamlObj || {};
+            } catch (e) {
+                debug.error('Error parsing YAML content:', e);
+                return {};
+            }
+        }
+        
+        // If no YAML content, build from form elements
+        const formData = {};
+        const formElements = document.querySelectorAll('#editor-form-container input, #editor-form-container textarea, #editor-form-container select');
+        
+        formElements.forEach(element => {
+            const path = element.dataset.path;
+            if (!path) return;
+            
+            let value;
+            if (element.type === 'checkbox') {
+                value = element.checked;
+            } else {
+                value = element.value;
+                
+                // Try to parse JSON for complex fields
+                if (element.classList.contains('complex-array-editor') || 
+                    (element.parentElement && element.parentElement.classList.contains('complex-array-editor'))) {
+                    try {
+                        value = JSON.parse(value);
+                    } catch (e) {
+                        // Keep as string if not valid JSON
+                    }
+                }
+            }
+            
+            // Handle array items
+            const arrayMatch = path.match(/(.*?)\[(\d+)\]$/);
+            if (arrayMatch) {
+                const arrayPath = arrayMatch[1];
+                const index = parseInt(arrayMatch[2]);
+                
+                // Build path to array
+                const pathParts = arrayPath.split('.');
+                let current = formData;
+                for (let i = 0; i < pathParts.length; i++) {
+                    const part = pathParts[i];
+                    if (i === pathParts.length - 1) {
+                        if (!Array.isArray(current[part])) {
+                            current[part] = [];
+                        }
+                        // Ensure array has enough elements
+                        while (current[part].length <= index) {
+                            current[part].push('');
+                        }
+                        current[part][index] = value;
+                    } else {
+                        if (!current[part]) {
+                            current[part] = {};
+                        }
+                        current = current[part];
+                    }
+                }
+            } else {
+                // Handle regular properties
+                const pathParts = path.split('.');
+                let current = formData;
+                for (let i = 0; i < pathParts.length; i++) {
+                    const part = pathParts[i];
+                    if (i === pathParts.length - 1) {
+                        current[part] = value;
+                    } else {
+                        if (!current[part]) {
+                            current[part] = {};
+                        }
+                        current = current[part];
+                    }
+                }
+            }
+        });
+        
+        debug.verbose('Form data built from form elements');
+        return formData;
     },
     
     // Update YAML content based on form changes

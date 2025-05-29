@@ -1,6 +1,9 @@
+// Main application module
+
 // Main application functionality for ADLBuilder
 
-const app = {
+// Create app object and expose it to the global window object
+window.app = {
     // Initialize application
     init: async () => {
         // Set up event listeners
@@ -9,7 +12,7 @@ const app = {
         // Load jsyaml library first
         try {
             await app.loadJsYaml();
-            console.log('js-yaml loaded successfully');
+            debug.info('js-yaml loaded successfully');
         } catch (error) {
             console.error('Failed to load js-yaml:', error);
         }
@@ -164,7 +167,7 @@ const app = {
     
     // Navigate to a page
     navigateTo: (page) => {
-        console.log(`Navigating to page: ${page}`);
+        debug.info(`Navigating to page: ${page}`);
         
         // Get all pages
         const pages = document.querySelectorAll('.page');
@@ -195,13 +198,26 @@ const app = {
         
         // Special handling for different pages
         if (page === 'editor') {
-            console.log('Navigating to editor page, preparing editor...');
-            // Make sure the editor template is loaded first
-            editor.loadEditorTemplate();
-            // Then prepare the editor
-            setTimeout(() => {
+            debug.verbose('Navigating to editor page, preparing editor...');
+            // Wait for editor module to be ready
+            const waitForEditor = () => {
+                return new Promise((resolve) => {
+                    if (window.editor && window.editor.prepareEditor) {
+                        resolve(window.editor);
+                    } else {
+                        setTimeout(() => waitForEditor().then(resolve), 100);
+                    }
+                });
+            };
+
+            // Wait for editor and prepare it
+            waitForEditor().then(editor => {
+                editor.loadEditorTemplate();
                 editor.prepareEditor();
-            }, 100);
+            }).catch(error => {
+                console.error('Error loading editor:', error);
+                app.showNotification('Error loading editor. Please try again.', 'error');
+            });
         } else if (page === 'templates') {
             // Load templates
             templates.loadTemplates();
@@ -227,7 +243,7 @@ const app = {
     // Update visibility of elements that require authentication
     updateAuthRequiredElements: () => {
         const isAuthenticated = api.token.isValid();
-        console.log('Updating auth-required elements. User authenticated:', isAuthenticated);
+        debug.verbose('Updating auth-required elements. User authenticated:', isAuthenticated);
         
         // Update all elements with auth-required class
         document.querySelectorAll('.auth-required').forEach(el => {

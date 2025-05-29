@@ -38,7 +38,10 @@ const editor = {
     loadAssistant: actions.loadAssistant,
     saveAssistant: actions.saveAssistant,
     exportYaml: actions.exportYaml,
-    importYaml: actions.importYaml
+    importYaml: actions.importYaml,
+    prepareEditor: actions.prepareEditor,
+    generateForm: schema.generateForm,
+    updateProgress: ui.updateProgress
 };
 
 // Export editor module

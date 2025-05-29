@@ -4,9 +4,25 @@ import { ui } from './ui.js';
 import { schema } from './schema.js';
 
 export const actions = {
+    // Prepare editor when navigating to editor page
+    prepareEditor: async () => {
+        debug.info('Preparing editor...');
+        try {
+            // Load editor template first
+            ui.loadEditorTemplate();
+            
+            // Initialize editor content
+            debug.verbose('Initializing editor content...');
+            await schema.load();
+            debug.info('Editor content initialized successfully');
+        } catch (error) {
+            debug.error('Error preparing editor:', error);
+        }
+    },
+
     createNew: async () => {
         try {
-            console.log('Creating new assistant...');
+            debug.info('Creating new assistant...');
             updateState.setCurrentAssistant(null);
             updateState.setYamlContent('');
             updateState.setModified(false);
@@ -18,16 +34,16 @@ export const actions = {
             // Generate form
             await schema.generateForm();
             
-            console.log('New assistant created successfully');
+            debug.info('New assistant created successfully');
         } catch (error) {
-            console.error('Error creating new assistant:', error);
+            debug.error('Error creating new assistant:', error);
             app.showNotification('Error creating new assistant. Please try again.', 'error');
         }
     },
 
     saveAssistant: async () => {
         try {
-            console.log('Saving assistant...');
+            debug.info('Saving assistant...');
             
             // Get form data
             const formData = formGenerator.getFormData();
@@ -64,7 +80,7 @@ export const actions = {
             
             return savedAssistant;
         } catch (error) {
-            console.error('Error saving assistant:', error);
+            debug.error('Error saving assistant:', error);
             app.showNotification(error.detail || 'Error saving assistant. Please try again.', 'error');
             throw error;
         }
@@ -87,7 +103,7 @@ export const actions = {
             // Generate form
             await schema.generateForm();
         } catch (error) {
-            console.error('Error loading assistant:', error);
+            debug.error('Error loading assistant:', error);
             app.showNotification(error.detail || 'Error loading assistant. Please try again.', 'error');
         }
     },

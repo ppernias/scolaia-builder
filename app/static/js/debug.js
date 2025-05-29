@@ -1,36 +1,88 @@
-// Script de depuración para verificar la carga de componentes
+// Debug module for ADLBuilder
 
-// Función de registro condicional que solo muestra mensajes en modo debug
-const debugLog = (message, ...args) => {
-    if (typeof config !== 'undefined' && config.debug) {
-        console.log(message, ...args);
-    }
+// Create a global debug object
+window.debug = {
+    // Log levels
+    LEVELS: {
+        ERROR: 'error',
+        WARN: 'warn',
+        INFO: 'info',
+        VERBOSE: 'verbose'
+    },
+    
+    // Log a message with a specific level
+    log: (level, message, ...args) => {
+        // Default to info level if not specified
+        level = level || debug.LEVELS.INFO;
+        
+        // Check if this level is enabled in config
+        if (typeof config !== 'undefined' && 
+            ((config.debug && level === debug.LEVELS.VERBOSE) || 
+             (config.debugLevels && config.debugLevels[level]))) {
+            
+            // Use appropriate console method based on level
+            switch (level) {
+                case debug.LEVELS.ERROR:
+                    console.error(message, ...args);
+                    break;
+                case debug.LEVELS.WARN:
+                    console.warn(message, ...args);
+                    break;
+                case debug.LEVELS.INFO:
+                case debug.LEVELS.VERBOSE:
+                default:
+                    console.log(message, ...args);
+                    break;
+            }
+        }
+    },
+    
+    // Convenience methods for different log levels
+    error: (message, ...args) => debug.log(debug.LEVELS.ERROR, message, ...args),
+    warn: (message, ...args) => debug.log(debug.LEVELS.WARN, message, ...args),
+    info: (message, ...args) => debug.log(debug.LEVELS.INFO, message, ...args),
+    verbose: (message, ...args) => debug.log(debug.LEVELS.VERBOSE, message, ...args)
 };
 
-// Inicialización del script de depuración
-debugLog('Debug script loaded');
+// For backward compatibility
+const debugLog = (message, ...args) => debug.verbose(message, ...args);
 
-// Verificar que los objetos principales existan
-debugLog('API object:', typeof api !== 'undefined' ? 'Loaded' : 'Not loaded');
-debugLog('Auth object:', typeof auth !== 'undefined' ? 'Loaded' : 'Not loaded');
-debugLog('Admin object:', typeof admin !== 'undefined' ? 'Loaded' : 'Not loaded');
-debugLog('App object:', typeof app !== 'undefined' ? 'Loaded' : 'Not loaded');
+// No need for auto-reload here - handled by the anti-cache script in index.html
 
-// Verificar el estado de autenticación
-if (typeof api !== 'undefined' && typeof api.token !== 'undefined') {
-    debugLog('Token valid:', api.token.isValid());
-}
+// Initialization message
+debug.info('Debug module initialized');
 
-// Añadir un listener para cuando el DOM esté cargado
+// Check core dependencies
 document.addEventListener('DOMContentLoaded', () => {
-    debugLog('DOM fully loaded');
+    // Only log critical issues or when verbose logging is enabled
+    if (typeof api === 'undefined') {
+        debug.error('API object not loaded - application may not function correctly');
+    }
     
-    // Verificar elementos clave del DOM
-    debugLog('User profile element:', document.getElementById('user-profile') ? 'Found' : 'Not found');
-    debugLog('User name element:', document.getElementById('user-name') ? 'Found' : 'Not found');
-    debugLog('User dropdown menu:', document.getElementById('user-dropdown-menu') ? 'Found' : 'Not found');
-    debugLog('Admin panel link:', document.getElementById('admin-panel-link') ? 'Found' : 'Not found');
+    if (typeof app === 'undefined') {
+        debug.error('App object not loaded - application may not function correctly');
+    }
     
-    // Verificar la página de administración
-    debugLog('Admin page:', document.getElementById('page-admin') ? 'Found' : 'Not found');
+    if (typeof i18n === 'undefined') {
+        debug.warn('i18n object not loaded - translations may not work');
+    }
+    
+    // Authentication status - only log if there's an issue
+    if (typeof api !== 'undefined' && typeof api.token !== 'undefined') {
+        const isAuthenticated = api.token.isValid();
+        debug.verbose('Authentication status:', isAuthenticated ? 'Authenticated' : 'Not authenticated');
+    }
+    
+    // Log DOM initialization only in verbose mode
+    debug.verbose('DOM fully loaded');
+});
+
+// Add error handler for uncaught errors
+window.addEventListener('error', (event) => {
+    debug.error('Uncaught error:', event.message, 'at', event.filename, 'line', event.lineno);
+});
+
+// Add handler for unhandled promise rejections
+window.addEventListener('unhandledrejection', (event) => {
+    debug.error('Unhandled promise rejection:', event.reason);
 });

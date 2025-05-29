@@ -1,6 +1,6 @@
 // Assistants functionality for ADLBuilder
 
-const assistants = {
+window.assistants = {
     // Current state
     state: {
         assistants: [],
@@ -60,7 +60,7 @@ const assistants = {
         const createButton = document.getElementById('create-new-assistant');
         if (createButton) {
             createButton.addEventListener('click', () => {
-                console.log('Create new assistant button clicked');
+                debug.verbose('Create new assistant button clicked');
                 // Navigate to editor page first
                 app.navigateTo('editor');
                 
@@ -217,7 +217,7 @@ const assistants = {
         const assistantsToRender = filteredAssistants || assistants.state.assistants;
         
         // Verificar si hay un elemento de depuración para mostrar el estado actual
-        console.log('Estado actual:', {
+        debug.verbose('Estado actual:', {
             loading: assistants.state.loading,
             error: assistants.state.error,
             assistantsCount: (filteredAssistants || assistants.state.assistants).length
@@ -261,7 +261,7 @@ const assistants = {
                 const yamlObj = jsyaml.load(assistant.yaml_content);
                 tags = yamlObj.metadata?.tags || [];
             } catch (e) {
-                console.error('Error parsing YAML:', e);
+                debug.error('Error parsing YAML:', e);
             }
             
             // Format date
@@ -318,7 +318,7 @@ const assistants = {
             
             app.showNotification('Assistant deleted successfully!', 'success');
         } catch (error) {
-            console.error('Error deleting assistant:', error);
+            debug.error('Error deleting assistant:', error);
             app.showNotification(error.detail || 'Error deleting assistant. Please try again.', 'error');
         }
     }
