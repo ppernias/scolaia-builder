@@ -1,4 +1,4 @@
-// Schema loader for ADLBuilder
+// Schema loader for ADLMaker
 
 // Create schemaLoader object and expose it to the global window object
 window.schemaLoader = {

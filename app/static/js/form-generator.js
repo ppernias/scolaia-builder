@@ -1,4 +1,4 @@
-// Dynamic form generator for ADLBuilder
+// Dynamic form generator for ADLMaker
 
 // Create formGenerator object
 window.formGenerator = {
@@ -351,14 +351,14 @@ window.formGenerator = {
         const form = document.querySelector('.editor-form');
         if (!form) return;
         
-        // Handle input changes
+        // Handle input changes - solo marcamos como modificado pero no actualizamos el YAML
         form.addEventListener('input', (e) => {
             const target = e.target;
             const path = target.getAttribute('data-path');
             
             if (path) {
-                // Update the YAML content based on form changes
-                formGenerator.updateYamlFromForm(path, target);
+                // Solo marcamos el formulario como modificado
+                editor.state.isModified = true;
             }
         });
         

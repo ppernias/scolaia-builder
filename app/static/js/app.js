@@ -1,6 +1,6 @@
 // Main application module
 
-// Main application functionality for ADLBuilder
+// Main application functionality for ADLMaker
 
 // Create app object and expose it to the global window object
 window.app = {

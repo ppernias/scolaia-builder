@@ -9,7 +9,7 @@ import argparse
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description='Prueba la API de ADLBuilder')
+    parser = argparse.ArgumentParser(description='Prueba la API de ADLMaker')
     parser.add_argument('--url', default='http://localhost:8080', help='URL base de la API')
     parser.add_argument('--email', default='admin@example.com', help='Email del usuario administrador')
     parser.add_argument('--password', default='password', help='Contraseu00f1a del usuario administrador')

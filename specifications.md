@@ -1,10 +1,10 @@
-# Feature Specifications – ADLBuilder
+# Feature Specifications – ADLMaker
 
 ## Core Features
 
 ### 1. Assistant Creation and Editing
 
-ADLBuilder provides a structured environment for creating and managing assistant configurations in YAML format, adhering strictly to a shared schema.
+ADLMaker provides a structured environment for creating and managing assistant configurations in YAML format, adhering strictly to a shared schema.
 
 Editing Features:
 - Dual editing modes:
@@ -62,7 +62,7 @@ Validation Capabilities:
 
 ### 5. Integration with OpenAI (Planned)
 
-To assist users in refining assistants, ADLBuilder will integrate AI services to generate or suggest improvements.
+To assist users in refining assistants, ADLMaker will integrate AI services to generate or suggest improvements.
 
 Planned AI Features:
 - Auto-generation of assistant capabilities and behavior descriptions
@@ -131,11 +131,11 @@ Planned AI Features:
 - File system or DB-backed YAML storage
 - OpenAI API integration (future)
 
-# Implementation Standards and Development Approach – ADLBuilder
+# Implementation Standards and Development Approach – ADLMaker
 
 ## Development Philosophy
 
-ADLBuilder is built with a focus on **clarity, modularity, and developer ergonomics**. The project aims to balance a lightweight architecture with expressive power, enabling contributors to reason clearly about assistant configuration, validation logic, and UI state. We prioritize:
+ADLMaker is built with a focus on **clarity, modularity, and developer ergonomics**. The project aims to balance a lightweight architecture with expressive power, enabling contributors to reason clearly about assistant configuration, validation logic, and UI state. We prioritize:
 
 - Explicit structure over implicit magic  
 - Schema-driven design  
@@ -255,10 +255,10 @@ async def validate_yaml(file: UploadFile):
 
 # ADL Builder
 ## Project Overview
-ADLBuilder is a tool designed to streamline the creation of structured, reusable assistant configurations in YAML format, enabling seamless integration with AI wrappers like ChatGPT, OpenWebUI, and others. By offering a user-friendly interface for defining assistant behavior, personality, and domain-specific instructions, ADLBuilder empowers developers, educators, and AI designers to prototype, document, and deploy customized assistants efficiently. The project bridges the gap between natural language prompt engineering and modular software configuration, promoting clarity, reusability, and version control in assistant design workflows.
+ADLMaker is a tool designed to streamline the creation of structured, reusable assistant configurations in YAML format, enabling seamless integration with AI wrappers like ChatGPT, OpenWebUI, and others. By offering a user-friendly interface for defining assistant behavior, personality, and domain-specific instructions, ADLMaker empowers developers, educators, and AI designers to prototype, document, and deploy customized assistants efficiently. The project bridges the gap between natural language prompt engineering and modular software configuration, promoting clarity, reusability, and version control in assistant design workflows.
 
 ### Vision Statement
-ADLBuilder envisions a future where designing intelligent assistants is as intuitive, transparent, and standardized as writing code. By empowering creators to define assistant behavior through clear, modular, and portable descriptions, we aim to foster an open ecosystem of interoperable, ethical, and domain-aware AI agents that can be trusted, shared, and continuously improved by diverse communities.
+ADLMaker envisions a future where designing intelligent assistants is as intuitive, transparent, and standardized as writing code. By empowering creators to define assistant behavior through clear, modular, and portable descriptions, we aim to foster an open ecosystem of interoperable, ethical, and domain-aware AI agents that can be trusted, shared, and continuously improved by diverse communities.
 
 ### Problem Statement
 While the creation of AI assistants through natural language system prompts has become more accessible, the process remains largely informal, unstructured, and limited in scope. Current approaches typically rely on ad-hoc textual descriptions of an assistant’s personality and high-level goals, but they fall short when more advanced behavior is needed. In particular:
@@ -272,7 +272,7 @@ While the creation of AI assistants through natural language system prompts has 
 As a result, building consistent, transparent, and maintainable AI assistants remains a manual and error-prone process, especially when designing agents intended for specialized or professional contexts.
 
 ### Solution
-**ADLBuilder** offers a structured, user-friendly environment for designing and managing assistant definitions through a modular, YAML-based Assistant Description Language (ADL). The platform enables users to:
+**ADLMaker** offers a structured, user-friendly environment for designing and managing assistant definitions through a modular, YAML-based Assistant Description Language (ADL). The platform enables users to:
 
 - Define assistants using **structured components**: personality, goals, capabilities, tone, constraints, workflows, and contextual knowledge  
 - Build **task-specific modules** (TOOLS: Commands, Options and Decorators) that can be composed, reused, and shared across different assistants  
@@ -281,7 +281,7 @@ As a result, building consistent, transparent, and maintainable AI assistants re
 - Maintain a **library of assistant templates**, fostering reuse and standardization within organizations or communities  
 - Support **role-specific behavior** and domain adaptation through context injection and conditional logic  
 
-By combining expressive power with structure and portability, ADLBuilder makes it possible to design assistants that go beyond chatty personas—enabling reliable, maintainable, and transparent assistant behaviors tailored to real-world tasks.
+By combining expressive power with structure and portability, ADLMaker makes it possible to design assistants that go beyond chatty personas—enabling reliable, maintainable, and transparent assistant behaviors tailored to real-world tasks.
 
 
 ### Target Audience
@@ -300,9 +300,9 @@ Primary focus: Educators and developers interested in creating structured, high-
 
 ### Success Metrics
 
-The success of ADLBuilder will be measured by:
+The success of ADLMaker will be measured by:
 
-- **Time-to-build**: How quickly users (educators or professionals) can design and deploy advanced, task-capable assistants using the ADLBuilder interface  
+- **Time-to-build**: How quickly users (educators or professionals) can design and deploy advanced, task-capable assistants using the ADLMaker interface  
 - **Time-saved-in-use**: The degree to which these assistants reduce repetitive workload, offer autonomous guidance, or streamline user interaction processes  
 - **Adoption rate among educators and AI practitioners**, particularly in contexts where assistant consistency and task specificity are critical  
 - **Reuse and sharing of assistant modules**, indicating the emergence of a community-driven ecosystem around structured assistant design
@@ -390,9 +390,9 @@ The project will be considered successful if:
    - Simple mode users can create usable assistants without needing schema expertise  
    - Advanced users can fully customize assistant behavior and logic using all schema components
 
-# Project Structure – ADLBuilder (Initial Architecture)
+# Project Structure – ADLMaker (Initial Architecture)
 
-The ADLBuilder project is organized as a full-stack application with a **FastAPI + Uvicorn backend** and a htp/css/typescript frontend, following a clear separation of responsibilities between client and server. This architecture is designed to ensure maintainability, scalability, and a smooth developer experience.
+The ADLMaker project is organized as a full-stack application with a **FastAPI + Uvicorn backend** and a htp/css/typescript frontend, following a clear separation of responsibilities between client and server. This architecture is designed to ensure maintainability, scalability, and a smooth developer experience.
 
 ## Monorepo Overview
 
@@ -454,7 +454,7 @@ adlbuilder/
 
 This architectural approach keeps the system **coherent, extensible, and maintainable** as new capabilities are added, while supporting both educational and professional users effectively.
 
-# Requirements Document for ADLBuilder
+# Requirements Document for ADLMaker
 
 ## Functional Requirements
 
@@ -545,7 +545,7 @@ This architectural approach keeps the system **coherent, extensible, and maintai
 - Documentation system for both users (UI) and developers (API)  
 - ESLint, Prettier, and Black for code style consistency  
 
-# Tech Stack Documentation – ADLBuilder
+# Tech Stack Documentation – ADLMaker
 
 ## Frontend
 
@@ -594,11 +594,11 @@ This architectural approach keeps the system **coherent, extensible, and maintai
 - **CORS configuration** to restrict API access to trusted origins
 
 
-# User Flow Documentation – ADLBuilder
+# User Flow Documentation – ADLMaker
 
 ## Overview
 
-This document outlines the core user experience in ADLBuilder, from account creation to assistant definition, editing, validation, and export. The platform is designed for educators and AI practitioners to easily construct, reuse, and refine YAML-based assistant definitions through a structured and intuitive interface.
+This document outlines the core user experience in ADLMaker, from account creation to assistant definition, editing, validation, and export. The platform is designed for educators and AI practitioners to easily construct, reuse, and refine YAML-based assistant definitions through a structured and intuitive interface.
 
 ---
 
@@ -606,10 +606,10 @@ This document outlines the core user experience in ADLBuilder, from account crea
 
 ### 1. Landing and Registration
 
-When users first access ADLBuilder:
+When users first access ADLMaker:
 
 - They are welcomed by a minimalist landing page explaining:
-  - The purpose and value of ADLBuilder
+  - The purpose and value of ADLMaker
   - Key use cases (educational agents, task assistants)
   - A "Get Started" call-to-action
 
@@ -741,7 +741,7 @@ When users first access ADLBuilder:
 
 ## Mobile Experience
 
-ADLBuilder supports a responsive, mobile-friendly layout with:
+ADLMaker supports a responsive, mobile-friendly layout with:
 
 - Simplified navigation drawer
 - Vertical stacking of editor sections

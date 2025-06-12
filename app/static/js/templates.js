@@ -1,4 +1,4 @@
-// Templates functionality for ADLBuilder
+// Templates functionality for ADLMaker
 
 const templates = {
     // Current state

@@ -1,4 +1,4 @@
-// Editor functionality for ADLBuilder
+// Editor functionality for ADLMaker
 
 const editor = {
     // Current state

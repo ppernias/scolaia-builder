@@ -155,5 +155,31 @@ export const actions = {
         
         // Trigger file dialog
         input.click();
+    },
+    
+    // Actualizar el YAML desde el formulario sin guardar en la API
+    updateYamlFromForm: () => {
+        try {
+            debug.info('Actualizando YAML desde el formulario...');
+            
+            // Get form data
+            const formData = formGenerator.getFormData();
+            
+            // Generate YAML
+            const yaml = jsyaml.dump(formData);
+            updateState.setYamlContent(yaml);
+            
+            // Actualizar la vista previa del YAML si está visible
+            if (document.getElementById('yaml-modal').classList.contains('active')) {
+                ui.updateYamlPreview();
+            }
+            
+            app.showNotification('YAML actualizado correctamente', 'success');
+            return true;
+        } catch (error) {
+            debug.error('Error actualizando YAML desde el formulario:', error);
+            app.showNotification('Error actualizando YAML. Por favor, inténtalo de nuevo.', 'error');
+            return false;
+        }
     }
 };

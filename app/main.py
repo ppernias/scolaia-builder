@@ -27,9 +27,22 @@ class ProxyHeadersMiddleware(BaseHTTPMiddleware):
 from app.core.config import settings
 from app.core.database import get_db, Base, engine, init_db
 from app.api import auth, users, assistants, validate, templates as template_api, admin, schema
+import logging
+
+# Configurar logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Inicializar la base de datos (crear tablas si no existen)
 init_db()
+
+# Mostrar información de configuración en el log
+logger.info(f"Dominio principal: {settings.DOMAIN_NAME}")
+logger.info(f"Hosts permitidos: {settings.ALLOWED_HOSTS}")
+logger.info(f"Orígenes CORS: {settings.BACKEND_CORS_ORIGINS}")
+logger.info(f"Variables de entorno cargadas desde: {os.environ.get('DOTENV_FILE', '.env')}")
+logger.info(f"ADDITIONAL_CORS_ORIGINS: {os.environ.get('ADDITIONAL_CORS_ORIGINS', 'No configurado')}")
+
 
 # Inicializar la aplicación FastAPI
 app = FastAPI(
@@ -38,16 +51,27 @@ app = FastAPI(
 )
 
 # Configurar middlewares
+# Convertir ALLOWED_HOSTS a una lista si es una cadena
+allowed_hosts = settings.ALLOWED_HOSTS.split(",") if isinstance(settings.ALLOWED_HOSTS, str) else [settings.ALLOWED_HOSTS]
+# Añadir localhost para desarrollo y builder.scolaia.net
+allowed_hosts.extend(["localhost", "127.0.0.1", "builder.scolaia.net"])
+
+logger.info(f"Hosts permitidos para TrustedHostMiddleware: {allowed_hosts}")
+
 app.add_middleware(
     TrustedHostMiddleware,
-    allowed_hosts=[settings.ALLOWED_HOSTS] if settings.ALLOWED_HOSTS else ["*"]
+    allowed_hosts=allowed_hosts
 )
 
 app.add_middleware(ProxyHeadersMiddleware)
 
+# Asegurarse de que BACKEND_CORS_ORIGINS sea una lista
+cors_origins = settings.BACKEND_CORS_ORIGINS
+logger.info(f"Orígenes CORS configurados para el middleware: {cors_origins}")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[f"https://{settings.ALLOWED_HOSTS}", f"http://{settings.ALLOWED_HOSTS}"] if settings.ALLOWED_HOSTS else ["*"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -91,6 +115,16 @@ async def health_check(db: Session = Depends(get_db)):
         "status": "ok",
         "database": db_status,
         "version": settings.PROJECT_NAME + " v1.0.0"
+    }
+
+# Ruta para depurar la configuración CORS
+@app.get("/debug/cors", tags=["system"])
+async def debug_cors():
+    return {
+        "allowed_hosts": settings.ALLOWED_HOSTS,
+        "domain_name": settings.DOMAIN_NAME,
+        "cors_origins": settings.BACKEND_CORS_ORIGINS,
+        "env_additional_origins": os.environ.get("ADDITIONAL_CORS_ORIGINS", "")
     }
 
 # Iniciar la aplicación con Uvicorn si se ejecuta directamente

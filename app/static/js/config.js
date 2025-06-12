@@ -1,4 +1,4 @@
-// Configuration settings for ADLBuilder
+// Configuration settings for ADLMaker
 
 window.config = {
     // Debug settings

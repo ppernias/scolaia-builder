@@ -1,5 +1,6 @@
 // Editor UI management
 import { state, updateState } from './state.js';
+import { actions } from './actions.js';
 
 export const ui = {
     loadEditorTemplate: () => {
@@ -30,6 +31,24 @@ export const ui = {
             });
         }
 
+        // Save Changes button
+        const saveChangesButton = document.getElementById('save-changes');
+        if (saveChangesButton) {
+            saveChangesButton.addEventListener('click', () => {
+                debug.info('Save Changes button clicked');
+                actions.updateYamlFromForm();
+            });
+        }
+
+        // View YAML button
+        const viewYamlButton = document.getElementById('view-yaml');
+        if (viewYamlButton) {
+            viewYamlButton.addEventListener('click', () => {
+                debug.info('View YAML button clicked');
+                ui.showYamlModal();
+            });
+        }
+
         // Import/Export buttons
         const importButton = document.getElementById('import-yaml');
         if (importButton) {
@@ -38,7 +57,7 @@ export const ui = {
 
         const exportButton = document.getElementById('export-yaml');
         if (exportButton) {
-            exportButton.addEventListener('click', () => ui.exportYaml());
+            exportButton.addEventListener('click', () => editor.exportYaml());
         }
     },
 
@@ -71,8 +90,12 @@ export const ui = {
     },
 
     showYamlModal: () => {
+        debug.info('Showing YAML modal');
         const modal = document.getElementById('yaml-modal');
         if (modal) {
+            // No actualizamos el YAML automáticamente, mostramos el YAML actual
+            // El usuario debe hacer clic en "Save Changes" para actualizar el YAML
+            
             modal.classList.add('active');
             ui.updateYamlPreview();
             
@@ -84,13 +107,42 @@ export const ui = {
                 }
             };
             document.addEventListener('keydown', escapeHandler);
+            
+            // Set up close buttons
+            const closeTopButton = document.getElementById('close-yaml-modal');
+            if (closeTopButton) {
+                closeTopButton.onclick = ui.hideYamlModal;
+            }
+            
+            const closeBottomButton = document.getElementById('close-yaml-modal-bottom');
+            if (closeBottomButton) {
+                closeBottomButton.onclick = ui.hideYamlModal;
+            }
+            
+            // Mostrar mensaje informativo sobre cómo actualizar el YAML
+            const yamlOutput = document.getElementById('yaml-output');
+            if (yamlOutput && !state.yamlContent) {
+                yamlOutput.textContent = '# Para actualizar el YAML con los cambios del formulario, haz clic en "Save Changes" primero';
+            }
         }
     },
 
     hideYamlModal: () => {
+        debug.info('Hiding YAML modal');
         const modal = document.getElementById('yaml-modal');
         if (modal) {
             modal.classList.remove('active');
+            
+            // Remove event listeners to prevent memory leaks
+            const closeTopButton = document.getElementById('close-yaml-modal');
+            if (closeTopButton) {
+                closeTopButton.onclick = null;
+            }
+            
+            const closeBottomButton = document.getElementById('close-yaml-modal-bottom');
+            if (closeBottomButton) {
+                closeBottomButton.onclick = null;
+            }
         }
     },
 

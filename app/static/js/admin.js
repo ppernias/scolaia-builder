@@ -1,4 +1,4 @@
-// Funcionalidad de administraciu00f3n para ADLBuilder
+// Funcionalidad de administraciu00f3n para ADLMaker
 
 window.admin = {
     // Estado actual

@@ -224,7 +224,6 @@ properties:
         type: object
         required:
           - commands
-          - workflows
           - options
           - decorators
         properties:
@@ -252,41 +251,6 @@ properties:
                 display_name: "help"
                 description: "Displays a list of available commands."
                 prompt: "Show the help menu with available commands, options, and decorators."
-          workflows:
-            type: object
-            title: Workflows (/)
-            description: "Predefined sequences of commands, options, and decorators to guide complex tasks."
-            x-category: custom
-            additionalProperties:
-              type: object
-              required:
-                - display_name
-                - description
-                - sequence
-              properties:
-                display_name:
-                  type: string
-                description:
-                  type: string
-                sequence:
-                  type: array
-                  items:
-                    type: object
-                    required:
-                      - command
-                      - purpose
-                    properties:
-                      command:
-                        type: string
-                        description: "The command to be executed (must begin with '/')."
-                      purpose:
-                        type: string
-                        description: "Explanation of what this step achieves."
-                      decorators:
-                        type: array
-                        items:
-                          type: string
-                        description: "List of decorators (must begin with '+++')."
           options:
             type: object
             title: Options (/)

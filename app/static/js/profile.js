@@ -1,4 +1,4 @@
-// Funcionalidad de perfil de usuario para ADLBuilder
+// Funcionalidad de perfil de usuario para ADLMaker
 
 const profile = {
     // Estado actual

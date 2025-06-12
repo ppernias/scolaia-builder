@@ -1,4 +1,4 @@
-// API handling for ADLBuilder
+// API handling for ADLMaker
 
 // Create API object and expose it to the global window object
 window.api = {

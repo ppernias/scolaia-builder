@@ -9,7 +9,7 @@ const waitForFormGenerator = () => {
             debug.verbose('formGenerator found with generateForm function');
             resolve(window.formGenerator);
         } else {
-            debug.verbose('Waiting for formGenerator...');
+            debug.verbose('Waiting for formGenerator... Available global objects:', Object.keys(window).filter(key => typeof window[key] === 'object' && key !== 'window'));
             setTimeout(() => waitForFormGenerator().then(resolve), 100);
         }
     });
@@ -56,7 +56,18 @@ export const schema = {
             
             // Wait for formGenerator to be available
             debug.verbose('Waiting for formGenerator to be available...');
-            const formGenerator = await waitForFormGenerator();
+            
+            // Verificar si formGenerator está disponible globalmente
+            if (!window.formGenerator) {
+                debug.error('formGenerator no está disponible globalmente');
+                throw new Error('formGenerator no está disponible globalmente');
+            }
+            
+            // Verificar métodos disponibles en formGenerator
+            debug.info('Métodos disponibles en formGenerator:', Object.keys(window.formGenerator));
+            
+            // Usar el objeto formGenerator global directamente
+            const formGeneratorObj = window.formGenerator;
             debug.verbose('formGenerator is available, generating form...');
             
             // Check if there are any custom properties for simple mode
@@ -76,11 +87,11 @@ export const schema = {
             }
             
             // Generate form based on schema and current mode
-            if (typeof formGenerator.generateForm !== 'function') {
-                throw new Error(`formGenerator.generateForm is not a function. Available methods: ${Object.keys(formGenerator).join(', ')}`);
+            if (typeof formGeneratorObj.generateForm !== 'function') {
+                throw new Error(`formGenerator.generateForm is not a function. Available methods: ${Object.keys(formGeneratorObj).join(', ')}`);
             }
             
-            const formHtml = formGenerator.generateForm(state.schema, '', useAdvancedMode ? 'advanced' : state.mode);
+            const formHtml = formGeneratorObj.generateForm(state.schema, '', useAdvancedMode ? 'advanced' : state.mode);
             debug.verbose('Form HTML generated successfully');
             
             // Insert the generated form into the form container
@@ -89,7 +100,7 @@ export const schema = {
                 debug.verbose('Inserting form HTML into container');
                 formContainer.innerHTML = formHtml;
                 debug.verbose('Setting up form event listeners');
-                formGenerator.setupFormEventListeners();
+                formGeneratorObj.setupFormEventListeners();
             } else {
                 debug.warn('Form container not found');
             }

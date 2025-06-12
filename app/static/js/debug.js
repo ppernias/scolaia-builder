@@ -1,4 +1,4 @@
-// Debug module for ADLBuilder
+// Debug module for ADLMaker
 
 // Create a global debug object
 window.debug = {

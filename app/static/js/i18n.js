@@ -1,4 +1,4 @@
-// Internationalization module for ADLBuilder
+// Internationalization module for ADLMaker
 
 // Create i18n object and expose it to the global window object
 window.i18n = {
@@ -15,7 +15,7 @@ window.i18n = {
     translations: {
         en: {
             // Common
-            'app.name': 'ADLBuilder',
+            'app.name': 'ADLMaker',
             'app.tagline': 'Build Powerful AI Assistants',
             'app.description': 'Create, customize, and share assistant definitions with a schema-driven editor',
             
@@ -51,7 +51,7 @@ window.i18n = {
             'assistants.title': 'My Assistants',
             'assistants.loading': 'Loading assistants...',
             'assistants.empty.title': 'You don\'t have any assistants yet',
-            'assistants.empty.description': 'Create your first custom assistant to start using ADLBuilder.',
+            'assistants.empty.description': 'Create your first custom assistant to start using ADLMaker.',
             'assistants.empty.button': 'Create my first assistant',
             'assistants.create': 'Create New',
             'assistants.search.placeholder': 'Search assistants...',
@@ -83,7 +83,7 @@ window.i18n = {
         },
         es: {
             // Common
-            'app.name': 'ADLBuilder',
+            'app.name': 'ADLMaker',
             'app.tagline': 'Crea Asistentes IA Potentes',
             'app.description': 'Crea, personaliza y comparte definiciones de asistentes con un editor basado en esquemas',
             
@@ -119,7 +119,7 @@ window.i18n = {
             'assistants.title': 'Mis Asistentes',
             'assistants.loading': 'Cargando asistentes...',
             'assistants.empty.title': 'Aún no tienes asistentes',
-            'assistants.empty.description': 'Crea tu primer asistente personalizado para comenzar a utilizar ADLBuilder.',
+            'assistants.empty.description': 'Crea tu primer asistente personalizado para comenzar a utilizar ADLMaker.',
             'assistants.empty.button': 'Crear mi primer asistente',
             'assistants.create': 'Crear Nuevo',
             'assistants.search.placeholder': 'Buscar asistentes...',

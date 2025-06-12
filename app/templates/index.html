@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADLBuilder - Assistant Definition Language Builder</title>
+    <title>ADLMaker - Assistant Definition Language Builder</title>
     
     <!-- Anti-cache script for development -->
     <script>
@@ -43,7 +43,7 @@
     <header>
         <div class="container">
             <div class="logo">
-                <h1>ADLBuilder</h1>
+                <h1>ADLMaker</h1>
             </div>
             <nav>
                 <ul>
@@ -197,7 +197,7 @@
 
     <footer>
         <div class="container">
-            <p>&copy; 2025 ADLBuilder. All rights reserved.</p>
+            <p>&copy; 2025 ADLMaker. All rights reserved.</p>
         </div>
     </footer>
 
@@ -220,6 +220,10 @@
                     <button class="btn btn-primary" id="save-assistant">
                         <i class="fas fa-save"></i>
                         <span data-i18n="editor.save">Save</span>
+                    </button>
+                    <button class="btn btn-secondary" id="save-changes">
+                        <i class="fas fa-sync"></i>
+                        <span>Save Changes</span>
                     </button>
                     <button class="btn btn-secondary" id="view-yaml">
                         <i class="fas fa-code"></i>
@@ -263,7 +267,12 @@
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-                <pre id="yaml-output"></pre>
+                <div class="yaml-modal-body">
+                    <pre id="yaml-output"></pre>
+                </div>
+                <div class="yaml-modal-footer">
+                    <button class="btn btn-primary" id="close-yaml-modal-bottom">Cerrar</button>
+                </div>
             </div>
         </div>
     </template>

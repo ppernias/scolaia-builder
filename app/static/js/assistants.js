@@ -1,4 +1,4 @@
-// Assistants functionality for ADLBuilder
+// Assistants functionality for ADLMaker
 
 window.assistants = {
     // Current state

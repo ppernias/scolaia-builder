@@ -1,8 +1,8 @@
-# ADLBuilder - Assistant Definition Language Builder
+# ADLMaker - Assistant Definition Language Builder
 
 ## Description
 
-ADLBuilder is a web application designed to create, edit, and manage AI assistant configurations in YAML format. The application provides an intuitive interface that allows users to define the behavior, capabilities, and personality of AI assistants following a standardized schema (ADL - Assistant Definition Language).
+ADLMaker is a web application designed to create, edit, and manage AI assistant configurations in YAML format. The application provides an intuitive interface that allows users to define the behavior, capabilities, and personality of AI assistants following a standardized schema (ADL - Assistant Definition Language).
 
 ## Key Features
 
@@ -182,7 +182,7 @@ The application is prepared to support multiple languages. It currently includes
 
 ## Security Features
 
-ADLBuilder implements several security features to protect user data and prevent unauthorized access:
+ADLMaker implements several security features to protect user data and prevent unauthorized access:
 
 ### JWT Authentication
 

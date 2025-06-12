@@ -18,7 +18,7 @@ init_db()
 from app.models.user import User
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description='Administrar usuarios de ADLBuilder')
+    parser = argparse.ArgumentParser(description='Administrar usuarios de ADLMaker')
     subparsers = parser.add_subparsers(dest='command', help='Comando a ejecutar')
     
     # Comando para actualizar/crear administrador

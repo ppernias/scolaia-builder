@@ -1,4 +1,4 @@
-// Authentication handling for ADLBuilder
+// Authentication handling for ADLMaker
 
 const auth = {
     // Current user data
