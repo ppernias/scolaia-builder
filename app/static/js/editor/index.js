@@ -41,7 +41,8 @@ const editor = {
     importYaml: actions.importYaml,
     prepareEditor: actions.prepareEditor,
     generateForm: schema.generateForm,
-    updateProgress: ui.updateProgress
+    updateProgress: ui.updateProgress,
+    updateYamlPreview: ui.updateYamlPreview
 };
 
 // Export editor module

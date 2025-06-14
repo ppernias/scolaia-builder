@@ -8,6 +8,13 @@ async function updateFieldsInForm(authorData) {
     let fieldsUpdated = 0;
     let errors = 0;
     
+    // Manejar el campo especial 'email' -> 'contact' si existe
+    if (authorData.email && !authorData.contact) {
+        authorData.contact = authorData.email;
+        delete authorData.email; // Eliminar la propiedad email para evitar errores
+        console.log("Mapeando email a contact:", authorData);
+    }
+    
     // Función para establecer el valor de un campo individual
     const setFieldValue = (fieldPath, value) => {
         const fieldId = `field-${fieldPath.replace(/\./g, '-')}`;
@@ -194,10 +201,33 @@ export const actions = {
                         // Usar los datos del usuario autenticado
                         const authorData = {
                             name: userData.name || '',
-                            email: userData.email || '',
+                            contact: userData.email || '', // Mapear email a contact según el esquema
                             organization: userData.organization || '',
                             role: userData.role || ''
                         };
+                        
+                        // Set campo email a null para asegurarnos que no cause problemas
+                        if ('email' in authorData) {
+                            delete authorData.email;
+                        }
+                        
+                        // Intentar actualizar el campo contact directamente
+                        try {
+                            const contactField = document.getElementById('field-metadata-author-contact');
+                            if (contactField) {
+                                contactField.value = userData.email || '';
+                                // Disparar eventos para asegurar que la aplicación detecte el cambio
+                                ['input', 'change'].forEach(eventType => {
+                                    const event = new Event(eventType, { bubbles: true });
+                                    contactField.dispatchEvent(event);
+                                });
+                                console.log('Campo contact actualizado manualmente:', userData.email);
+                            } else {
+                                console.warn('No se encontró el campo contact por ID');
+                            }
+                        } catch(e) {
+                            console.error('Error al actualizar campo contact manualmente:', e);
+                        }
                         console.log('Cargando datos del usuario autenticado:', authorData);
                         
                         // Actualizar campos del formulario con los datos del usuario
@@ -220,9 +250,10 @@ export const actions = {
                         // Crear objeto con datos de autor predeterminados
                         const defaultAuthorData = {
                             name: 'Usuario Prueba',
-                            email: 'usuario@example.com',
+                            contact: 'usuario@example.com', // Usar contact en lugar de email según el esquema
                             organization: 'Scolaia',
                             role: 'Developer'
+                            // No incluir email para evitar conflictos
                         };
                         console.log('Cargando datos predeterminados:', defaultAuthorData);
                         
