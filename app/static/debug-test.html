@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Depuración - ADLBuilder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow: auto;
+        }
+        .debug-info {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>ADLBuilder - Prueba de Depuración</h1>
+    <p>Esta página te permite probar la funcionalidad de depuración añadida al crear un nuevo asistente.</p>
+    
+    <button id="simulate-button">Simular "Create New Assistant"</button>
+    
+    <div class="debug-info">
+        <h2>Estado actual de auth.currentUser:</h2>
+        <pre id="user-data">Cargando...</pre>
+    </div>
+    
+    <!-- Cargar scripts necesarios -->
+    <script>
+        // Crear un objeto window.auth para pruebas si no existe
+        window.auth = window.auth || { currentUser: null };
+        
+        // Mostrar datos actuales de auth.currentUser
+        function updateUserDataDisplay() {
+            const userDataElement = document.getElementById('user-data');
+            if (window.auth && window.auth.currentUser) {
+                userDataElement.textContent = JSON.stringify(window.auth.currentUser, null, 2);
+            } else {
+                userDataElement.textContent = "No hay datos de usuario disponibles (auth.currentUser es null)";
+            }
+        }
+        
+        // Función para simular datos de usuario para pruebas
+        function simulateUserData() {
+            window.auth.currentUser = {
+                name: "Usuario de Prueba",
+                email: "test@example.com",
+                organization: "Organización de Prueba",
+                role: "Developer",
+                is_admin: true
+            };
+            updateUserDataDisplay();
+            alert("Datos de usuario simulados creados correctamente");
+        }
+        
+        // Inicializar página
+        document.addEventListener('DOMContentLoaded', () => {
+            // Mostrar datos actuales
+            updateUserDataDisplay();
+            
+            // Si no hay datos, ofrecer simularlos
+            if (!window.auth.currentUser) {
+                const createDataButton = document.createElement('button');
+                createDataButton.textContent = "Crear datos de usuario simulados";
+                createDataButton.addEventListener('click', simulateUserData);
+                document.body.insertBefore(createDataButton, document.querySelector('.debug-info'));
+            }
+            
+            // Botón de simulación
+            document.getElementById('simulate-button').addEventListener('click', () => {
+                // Verificar que tenemos los objetos necesarios
+                if (!window.editor || !window.editor.createNew) {
+                    alert("ERROR: No se puede encontrar la función editor.createNew. Verifica que todos los scripts están cargados correctamente.");
+                    console.log("Objeto editor disponible:", window.editor);
+                    return;
+                }
+                
+                // Intentar ejecutar la función
+                try {
+                    window.editor.createNew();
+                    alert("Función createNew ejecutada. Revisa si apareció el popup de depuración.");
+                } catch (error) {
+                    alert("Error al ejecutar la función: " + error.message);
+                    console.error(error);
+                }
+            });
+        });
+    </script>
+    
+    <!-- Cargar scripts de la aplicación -->
+    <script src="/static/js/config.js"></script>
+    <script src="/static/js/debug.js"></script>
+    <script src="/static/js/i18n.js"></script>
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/auth.js"></script>
+    <script src="/static/js/form-generator.js"></script>
+    <script src="/static/js/schema-loader.js"></script>
+    <script type="module" src="/static/js/editor.js"></script>
+</body>
+</html>

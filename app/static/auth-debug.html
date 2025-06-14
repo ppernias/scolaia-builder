@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Depuración de Autenticación - ADLBuilder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow: auto;
+        }
+        .debug-section {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .login-form {
+            margin-top: 20px;
+        }
+        .login-form input {
+            padding: 8px;
+            margin: 5px 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        h2 {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>ADLBuilder - Depuración de Autenticación</h1>
+    <p>Esta página te permite diagnosticar problemas de autenticación y probar la función createNew.</p>
+    
+    <div class="debug-section">
+        <h2>Estado de Autenticación</h2>
+        <button id="check-auth">Verificar Estado de Autenticación</button>
+        <pre id="auth-status">Presiona el botón para verificar el estado actual...</pre>
+    </div>
+    
+    <div class="debug-section">
+        <h2>Actualizar Datos de Usuario</h2>
+        <button id="refresh-user">Actualizar Datos de Usuario desde API</button>
+        <pre id="refresh-result">Presiona el botón para intentar actualizar...</pre>
+    </div>
+    
+    <div class="debug-section">
+        <h2>Iniciar Sesión</h2>
+        <div class="login-form">
+            <input type="email" id="email" placeholder="Email">
+            <input type="password" id="password" placeholder="Contraseña">
+            <button id="login-button">Iniciar Sesión</button>
+        </div>
+        <pre id="login-result">Ingresa credenciales y presiona el botón...</pre>
+    </div>
+    
+    <div class="debug-section">
+        <h2>Probar Función createNew</h2>
+        <button id="test-create-new">Probar createNew()</button>
+        <pre id="create-new-result">Presiona el botón para probar la función...</pre>
+    </div>
+    
+    <div class="debug-section">
+        <h2>Instrucciones</h2>
+        <ol>
+            <li>Primero verifica el estado de autenticación - si no hay usuario, inicia sesión.</li>
+            <li>Si hay token válido pero no hay datos de usuario, usa "Actualizar Datos" para intentar recuperarlos.</li>
+            <li>Una vez autenticado, prueba la función createNew para ver si muestra los datos correctamente.</li>
+            <li>Revisa la consola del navegador (F12) para ver mensajes de debug adicionales.</li>
+        </ol>
+    </div>
+    
+    <script>
+        // Esperar a que todos los scripts necesarios estén cargados
+        function waitForScripts() {
+            if (window.api && window.auth && window.editor) {
+                init();
+            } else {
+                setTimeout(waitForScripts, 100);
+            }
+        }
+        
+        function init() {
+            document.getElementById('check-auth').addEventListener('click', function() {
+                const status = window.authDebug.showStatus();
+                document.getElementById('auth-status').textContent = JSON.stringify(status, null, 2);
+            });
+            
+            document.getElementById('refresh-user').addEventListener('click', async function() {
+                try {
+                    const result = await window.authDebug.refreshUser();
+                    document.getElementById('refresh-result').textContent = result 
+                        ? 'Actualización exitosa. Datos de usuario:' + JSON.stringify(window.auth.currentUser, null, 2)
+                        : 'No se pudo actualizar. Verifica la consola para más detalles.';
+                } catch (error) {
+                    document.getElementById('refresh-result').textContent = 'Error: ' + error.message;
+                    console.error(error);
+                }
+            });
+            
+            document.getElementById('login-button').addEventListener('click', async function() {
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                
+                if (!email || !password) {
+                    document.getElementById('login-result').textContent = 'Debes ingresar email y contraseña';
+                    return;
+                }
+                
+                try {
+                    const result = await window.authDebug.forceLogin(email, password);
+                    document.getElementById('login-result').textContent = result 
+                        ? 'Login exitoso. Estado:\n' + JSON.stringify(result, null, 2)
+                        : 'Login falló. Verifica la consola para más detalles.';
+                } catch (error) {
+                    document.getElementById('login-result').textContent = 'Error: ' + error.message;
+                    console.error(error);
+                }
+            });
+            
+            document.getElementById('test-create-new').addEventListener('click', async function() {
+                try {
+                    const resultElement = document.getElementById('create-new-result');
+                    resultElement.textContent = 'Ejecutando createNew()...';
+                    
+                    if (!window.editor || !window.editor.createNew) {
+                        resultElement.textContent = 'Error: No se encontró la función editor.createNew';
+                        return;
+                    }
+                    
+                    await window.editor.createNew();
+                    resultElement.textContent = 'Función ejecutada. Verifica si apareció el popup y revisa la consola para logs.';
+                } catch (error) {
+                    document.getElementById('create-new-result').textContent = 'Error: ' + error.message;
+                    console.error(error);
+                }
+            });
+        }
+        
+        // Cargar los scripts necesarios
+        function loadScript(src, callback) {
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = callback;
+            document.head.appendChild(script);
+        }
+        
+        // Cargar scripts en orden
+        loadScript('/static/js/config.js', function() {
+            loadScript('/static/js/debug.js', function() {
+                loadScript('/static/js/i18n.js', function() {
+                    loadScript('/static/js/api.js', function() {
+                        loadScript('/static/js/app.js', function() {
+                            loadScript('/static/js/auth.js', function() {
+                                loadScript('/static/js/form-generator.js', function() {
+                                    loadScript('/static/js/schema-loader.js', function() {
+                                        loadScript('/static/js/auth-debug.js', function() {
+                                            loadScript('/static/js/editor.js', waitForScripts);
+                                        });
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>

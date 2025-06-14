@@ -2,6 +2,54 @@
 
 // Create formGenerator object
 window.formGenerator = {
+    // Función para establecer los datos del formulario
+    setFormData: function(data) {
+        console.log('setFormData llamado con:', data);
+        
+        // Si tenemos datos de autor, intentamos actualizar los campos correspondientes
+        if (data && data.metadata && data.metadata.author) {
+            const authorData = data.metadata.author;
+            console.log('Actualizando campos de autor con:', authorData);
+            
+            // Establecer valores en los campos del formulario
+            for (const [key, value] of Object.entries(authorData)) {
+                const fieldPath = `metadata.author.${key}`;
+                const fieldId = `field-${fieldPath.replace(/\./g, '-')}`;
+                const field = document.getElementById(fieldId);
+                
+                if (field) {
+                    if (field.type === 'checkbox') {
+                        field.checked = value;
+                    } else {
+                        field.value = value;
+                    }
+                    
+                    // Disparar eventos para actualizar el estado interno
+                    ['input', 'change'].forEach(eventType => {
+                        const event = new Event(eventType, { bubbles: true });
+                        field.dispatchEvent(event);
+                    });
+                    
+                    console.log(`Campo ${fieldId} actualizado con valor: ${value}`);
+                } else {
+                    console.warn(`No se encontró el campo ${fieldId} para actualizar`);
+                }
+            }
+            
+            // Actualizar el YAML si es necesario
+            if (this.updateYamlFromForm) {
+                try {
+                    this.updateYamlFromForm();
+                } catch (e) {
+                    console.error('Error al actualizar YAML:', e);
+                }
+            }
+            
+            return true;
+        }
+        
+        return false;
+    },
     // Generate form based on schema
     generateForm: (schema, parentPath = '', mode = 'simple') => {
         debug.info('Generating form with schema:', schema);
